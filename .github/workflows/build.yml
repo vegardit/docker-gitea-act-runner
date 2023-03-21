@@ -1,0 +1,95 @@
+# SPDX-FileCopyrightText: © Vegard IT GmbH (https://vegardit.com)
+# SPDX-FileContributor: Sebastian Thomschke
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-ArtifactOfProjectHomePage: https://github.com/vegardit/docker-gitea-act-runner
+#
+# https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
+name: Build
+
+on:
+  push:
+    branches:
+    - '**'
+    tags-ignore:
+    - '**'
+    paths-ignore:
+    - '**/*.md'
+    - '.github/*.yml'
+  schedule:
+    # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
+    - cron: '0 17 * * 3'
+  pull_request:
+  workflow_dispatch:
+    # https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
+
+env:
+  DOCKER_IMAGE_REPO: vegardit/gitea-act-runner
+  DOCKER_IMAGE_TAG: latest
+  TRIVY_CACHE_DIR: ~/.trivy/cache
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Git Checkout
+      uses: actions/checkout@v3 #https://github.com/actions/checkout
+
+    - name: Cache trivy cache
+      uses: actions/cache@v3
+      if: env.ACT != 'true' # https://github.com/nektos/act#skipping-steps
+      with:
+        path: ${{ env.TRIVY_CACHE_DIR }}
+        # https://github.com/actions/cache/issues/342#issuecomment-673371329
+        key: ${{ runner.os }}-trivy-${{ github.run_id }}
+        restore-keys: |
+          ${{ runner.os }}-trivy-
+
+    - name: Configure fast APT repository mirror
+      uses: vegardit/fast-apt-mirror.sh@v1
+
+    - name: Install dos2unix
+      run: sudo apt-get install --no-install-recommends -y dos2unix
+
+    - name: Build ${{ env.DOCKER_IMAGE_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
+      env:
+        DOCKER_REGISTRY: docker.io
+        DOCKER_REGISTRY_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+        DOCKER_REGISTRY_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+        TRIVY_GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        if [[ $GITHUB_REF_NAME == "main" && $ACT != "true" ]]; then
+          export DOCKER_PUSH=1
+          echo "$DOCKER_REGISTRY_TOKEN" | docker login -u="$DOCKER_REGISTRY_USERNAME" "$DOCKER_REGISTRY" --password-stdin
+        fi
+        bash build-image.sh
+
+    - name: Publish Docker image to GH registry
+      if: ${{ github.ref_name == 'main' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
+      run: |
+        set -eux
+
+        echo "${{ github.token }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
+
+        docker image tag $DOCKER_IMAGE_REPO ghcr.io/$DOCKER_IMAGE_REPO
+        docker push ghcr.io/$DOCKER_IMAGE_REPO
+
+    - name: Delete untagged images
+      uses: actions/github-script@v6
+      if: ${{ github.ref_name == 'main' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
+      with:
+        github-token: ${{ secrets.GHA_DELETE_PACKAGES }}
+        script: |
+          const imageName = /[^/]*$/.exec(process.env.DOCKER_IMAGE_REPO)[0]
+          const basePath = `/orgs/${{ github.repository_owner }}/packages/container/${imageName}/versions`
+          for (version of (await github.request(`GET ${basePath}`, { per_page: 100 })).data) {
+            if (version.metadata.container.tags.length == 0) {
+              console.log(`deleting ${version.name}...`)
+              const delResponse = await github.request(`DELETE ${basePath}/${version.id}`)
+              console.log(`status: ${delResponse.status}`)
+            }
+          }

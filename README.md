@@ -14,6 +14,13 @@
 
 `debian:stable-slim` based Docker image containing [Gitea](https://gitea.com)'s [act_runner](https://gitea.com/gitea/act_runner/)
 
+### Why not using Alpine Linux?
+- musl-libc - Alpine's Greatest Weakness https://www.linkedin.com/pulse/musl-libc-alpines-greatest-weakness-rogan-lynch
+- Why I will never use Alpine Linux ever again https://martinheinz.dev/blog/92
+- Does Alpine have known DNS issue within Kubernetes? https://stackoverflow.com/questions/65181012/
+- Why is the Alpine Docker image over 50% slower than the Ubuntu image? https://superuser.com/questions/1219609/
+- Performance issue with alpine musl library https://unix.stackexchange.com/questions/729342/
+
 
 ## Usage
 
@@ -37,7 +44,7 @@ services:
       GITEA_INSTANCE_INSECURE: '0' # optional, default is 0
       GITEA_RUNNER_REGISTRATION_TOKEN_FILE: 'path/to/file' # only required on first container start
       # or: GITEA_RUNNER_REGISTRATION_TOKEN: '<INSERT_TOKEN_HERE>'
-      GITEA_RUNNER_NAME: '' # optional, defaults to the container's hostname
+      GITEA_RUNNER_NAME: 'my-act-runner.example.com' # optional, defaults to the container's hostname
       GITEA_RUNNER_LABELS: '' # optional
       GITEA_RUNNER_UID: 1200 # optional, default is 1000
       GITEA_RUNNER_GID: 1200 # optional, default is 1000

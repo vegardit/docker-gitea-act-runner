@@ -1,0 +1,50 @@
+log:
+  level: ${GITEA_RUNNER_LOG_LEVEL:-info} # The level of logging, can be trace, debug, info, warn, error, fatal
+
+runner:
+  # Where to store the registration result.
+  file: '${GITEA_RUNNER_REGISTRATION_FILE:-/data/.runner}'
+  # Execute how many tasks concurrently at the same time.
+  capacity: ${GITEA_RUNNER_MAX_PARALLEL_JOBS:-1}
+  # Extra environment variables to run jobs.
+  envs:
+    ${GITEA_RUNNER_ENV_VAR_1_NAME:-GITEA_RUNNER_ENV_VAR_1}: '${GITEA_RUNNER_ENV_VAR_1_VALUE:-}'
+    ${GITEA_RUNNER_ENV_VAR_2_NAME:-GITEA_RUNNER_ENV_VAR_2}: '${GITEA_RUNNER_ENV_VAR_2_VALUE:-}'
+    ${GITEA_RUNNER_ENV_VAR_3_NAME:-GITEA_RUNNER_ENV_VAR_3}: '${GITEA_RUNNER_ENV_VAR_3_VALUE:-}'
+    ${GITEA_RUNNER_ENV_VAR_4_NAME:-GITEA_RUNNER_ENV_VAR_4}: '${GITEA_RUNNER_ENV_VAR_4_VALUE:-}'
+    ${GITEA_RUNNER_ENV_VAR_5_NAME:-GITEA_RUNNER_ENV_VAR_5}: '${GITEA_RUNNER_ENV_VAR_5_VALUE:-}'
+    ${GITEA_RUNNER_ENV_VAR_6_NAME:-GITEA_RUNNER_ENV_VAR_6}: '${GITEA_RUNNER_ENV_VAR_6_VALUE:-}'
+    ${GITEA_RUNNER_ENV_VAR_7_NAME:-GITEA_RUNNER_ENV_VAR_7}: '${GITEA_RUNNER_ENV_VAR_7_VALUE:-}'
+    ${GITEA_RUNNER_ENV_VAR_8_NAME:-GITEA_RUNNER_ENV_VAR_8}: '${GITEA_RUNNER_ENV_VAR_8_VALUE:-}'
+    ${GITEA_RUNNER_ENV_VAR_9_NAME:-GITEA_RUNNER_ENV_VAR_9}: '${GITEA_RUNNER_ENV_VAR_9_VALUE:-}'
+  # Extra environment variables to run jobs from a file.
+  # It will be ignored if it's empty or the file doesn't exist.
+  env_file: '${GITEA_RUNNER_ENV_FILE:-/data/.env}'
+  # The timeout for a job to be finished.
+  # Please note that the Gitea instance also has a timeout (3h by default) for the job.
+  # So the job could be stopped by the Gitea instance if it's timeout is shorter than this.
+  timeout: '${GITEA_JOB_TIMEOUT:-3h}'
+  # Whether skip verifying the TLS certificate of the Gitea instance.
+  insecure: ${GITEA_INSTANCE_INSECURE:-false}
+  # The timeout for fetching the job from the Gitea instance.
+  fetch_timeout: '${GITEA_RUNNER_FETCH_TIMEOUT:-5s}'
+  # The interval for fetching the job from the Gitea instance.
+  fetch_interval: '${GITEA_RUNNER_FETCH_INTERVAL:-2s}'
+
+cache:
+  # Enable cache server to use actions/cache.
+  enabled: ${ACT_CACHE_SERVER_ENABLED:-true}
+  # The directory to store the cache data.
+  # If it's empty, the cache data will be stored in $HOME/.cache/actcache.
+  dir: '${ACT_CACHE_SERVER_DIR:-/data/cache/server}'
+  # The host of the cache server.
+  # It's not for the address to listen, but the address to connect from job containers.
+  # So 0.0.0.0 is a bad choice, leave it empty to detect automatically.
+  host: '${ACT_CACHE_SERVER_HOST:-}'
+  # The port of the cache server.
+  # 0 means to use a random available port.
+  port: ${ACT_CACHE_SERVER_PORT:-0}
+
+container:
+  # Which network to use for the job containers. Could be bridge, host, none, or the name of a custom network.
+  network_mode: ${GITEA_RUNNER_JOB_NETWORK:-bridge}

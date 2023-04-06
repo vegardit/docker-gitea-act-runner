@@ -41,19 +41,53 @@ services:
       TZ: "Europe/Berlin"
       # config parameters for initial runner registration:
       GITEA_INSTANCE_URL: 'https://gitea.example.com' # required
-      GITEA_INSTANCE_INSECURE: '0' # optional, default is 0
-      GITEA_RUNNER_REGISTRATION_TOKEN_FILE: 'path/to/file' # only required on first container start
+      GITEA_RUNNER_REGISTRATION_TOKEN_FILE: 'path/to/file' # one-time registration token, only required on first container start
       # or: GITEA_RUNNER_REGISTRATION_TOKEN: '<INSERT_TOKEN_HERE>'
-      GITEA_RUNNER_NAME: 'my-act-runner.example.com' # optional, defaults to the container's hostname
-      GITEA_RUNNER_LABELS: '' # optional
-      GITEA_RUNNER_UID: 1200 # optional, default is 1000
-      GITEA_RUNNER_GID: 1200 # optional, default is 1000
     deploy:
       restart_policy:
         condition: on-failure
         delay: 5s
 ```
 
+### Additional environment variables
+
+The following environment variables can be specified to further configure the service.
+
+#### Runner registration:
+Name|Default Value|Description
+----|-------------|-----------
+GITEA_INSTANCE_INSECURE|`false`|It `true` don't verify the TLS certificate of the Gitea instance
+GITEA_RUNNER_NAME|`<empty>`|If not specified the container's hostname is used
+GITEA_RUNNER_LABELS|`<empty>`|Comma-separated list of labels (e.g. `ubuntu-20.04:docker://node:16-bullseye,ubuntu-18.04:docker://node:16-buster,linux_arm:host`) If not specified default labels are used.
+GITEA_RUNNER_REGISTRATION_FILE|`/data/.runner`|The JSON file that holds the result from the runner registration with the Gitea instance.
+GITEA_RUNNER_REGISTRATION_TIMEOUT|`30`|In case of failure, registration is retried until this timeout in seconds is reached.
+GITEA_RUNNER_REGISTRATION_RETRY_INTERVAL|`5`|Wait period in seconds between registration retries.
+
+#### Runner runtime config:
+
+Name|Default Value|Description
+----|-------------|-----------
+GITEA_RUNNER_CONFIG_TEMPLATE_FILE|`/opt/config.template.yaml`|Template to derive the effective config file from, see [image/config.template.yaml](image/config.template.yaml)
+GITEA_RUNNER_UID|`1000`|The UID of the Gitea runner process
+GITEA_RUNNER_GID|`1000`|The GID of the Gitea runner process
+GITEA_RUNNER_LOG_LEVEL|`info`|The level of logging, can be trace, debug, info, warn, error, fatal
+GITEA_RUNNER_ENV_FILE|`/data/.env`|Extra environment variables to run jobs from a file.
+GITEA_RUNNER_FETCH_TIMEOUT|`5s`|The timeout for fetching the job from the Gitea instance.
+GITEA_RUNNER_FETCH_INTERVAL|`2s`|The interval for fetching the job from the Gitea instance.
+GITEA_RUNNER_MAX_PARALLEL_JOBS|`1`|Maximum number of concurrently executed jobs
+GITEA_RUNNER_JOB_NETWORK|`bridge`|Docker network to use with job containers. Can be `bridge`, `host`, `none`, or the name of a custom network.
+GITEA_RUNNER_JOB_TIMEOUT|`3h`|The maximum time a job can run before it is cancelled.
+GITEA_RUNNER_ENV_VAR_**N**_NAME|`none`|Name of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_NAME=MY_AUTH_TOKEN`
+GITEA_RUNNER_ENV_VAR_**N**_VALUE|`<empty>`|Value of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_VALUE=SGVsbG8gbXkgZnJpZW5kIQ==`
+GITEA_RUNNER_ACTION_CACHE_DIR|`/data/cache/actions`|Path to cache cloned actions.
+
+#### Embedded cache server:
+Name|Default Value|Description
+----|-------------|-----------
+ACT_CACHE_SERVER_ENABLED|`true`| Enable the embedded cache service to use `actions/cache` in jobs.
+ACT_CACHE_SERVER_DIR|`/data/cache/server`| The directory to store the cache data.
+ACT_CACHE_SERVER_HOST|`<empty>`| The IP address or hostname via which the job containers can reach the cache server. Leave empty for automatic detection.
+ACT_CACHE_SERVER_PORT|`0`|The TCP port of the cache server. `0` means to use a random, available port.
 
 ## <a name="license"></a>License
 

@@ -44,6 +44,15 @@ DOCKER_BUILDKIT=1 docker build "$project_root" \
 
 
 #################################################
+# test image
+#################################################
+echo
+echo "Testing docker image [$image_name]..."
+docker run --rm $image_name act_runner --version
+echo
+
+
+#################################################
 # perform security audit
 #################################################
 if [[ "${DOCKER_AUDIT_IMAGE:-1}" == 1 ]]; then

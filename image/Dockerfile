@@ -91,17 +91,16 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   echo "#################################################"
   echo "Downloading Gitea act runner..."
   echo "#################################################"
-  mkdir /opt/act
-  curl -fsSL $ACT_RUNNER_DOWNLOAD_URL -o /opt/act/runner
-  chmod 755 /opt/act/runner
-  ls -l /opt/act/runner
+  curl -fsSL $ACT_RUNNER_DOWNLOAD_URL -o /usr/local/bin/act_runner
+  chmod 755 /usr/local/bin/act_runner
+  ls -l /usr/local/bin/act_runner
   echo "Stripping..."
-  strip --strip-unneeded /opt/act/runner
-  ls -l /opt/act/runner
+  strip --strip-unneeded /usr/local/bin/act_runner
+  ls -l /usr/local/bin/act_runner
   if [[ $UPX_COMPRESS == "true" ]]; then
-    /opt/upx/upx -9 /opt/act/runner
+    /opt/upx/upx -9 /usr/local/bin/act_runner
   fi
-  /opt/act/runner --version
+  act_runner --version
 
 EOF
 
@@ -110,7 +109,7 @@ EOF
 # runtime image
 ######################
 FROM runtime-base-image
-COPY --from=build-image /opt/act/runner /opt/act/runner
+COPY --from=build-image /usr/local/bin/act_runner /usr/local/bin/act_runner
 
 ARG BUILD_DATE
 ARG GIT_BRANCH

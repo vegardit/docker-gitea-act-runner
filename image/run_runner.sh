@@ -34,7 +34,7 @@ export XDG_CACHE_HOME=/tmp/.cache
 #################################################
 # render config file
 #################################################
-effective_config_file=/tmp/gitae_act_runner_config.yml
+effective_config_file=/tmp/gitea_act_runner_config.yml
 rm -f "$effective_config_file"
 if [[ ${GITEA_RUNNER_LOG_EFFECTIVE_CONFIG:-false} == "true" ]]; then
   log INFO "Effective runner config [$effective_config_file]:"

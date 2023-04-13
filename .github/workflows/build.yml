@@ -8,9 +8,9 @@ name: Build
 
 on:
   push:
-    branches:
+    branches:    # build all branches
     - '**'
-    tags-ignore:
+    tags-ignore: # but don't build tags
     - '**'
     paths-ignore:
     - '**/*.md'
@@ -22,20 +22,23 @@ on:
   workflow_dispatch:
     # https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
 
+defaults:
+  run:
+    shell: bash
+
 env:
   DOCKER_IMAGE_REPO: vegardit/gitea-act-runner
   DOCKER_IMAGE_TAG: latest
   TRIVY_CACHE_DIR: ~/.trivy/cache
-
-defaults:
-  run:
-    shell: bash
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Show environment variables
+      run: env | sort
+
     - name: Git Checkout
       uses: actions/checkout@v3 #https://github.com/actions/checkout
 
@@ -62,14 +65,15 @@ jobs:
         DOCKER_REGISTRY_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
         TRIVY_GITHUB_TOKEN: ${{ github.token }}
       run: |
-        if [[ $GITHUB_REF_NAME == "main" && $ACT != "true" ]]; then
+        set -eu
+        if [[ $GITHUB_REF_NAME == "main" && $GITHUB_EVENT_NAME != "pull_request" && ${ACT:-} != "true" ]]; then
           export DOCKER_PUSH=1
           echo "$DOCKER_REGISTRY_TOKEN" | docker login -u="$DOCKER_REGISTRY_USERNAME" "$DOCKER_REGISTRY" --password-stdin
         fi
         bash build-image.sh
 
     - name: Publish Docker image to GH registry
-      if: ${{ github.ref_name == 'main' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
+      if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
       run: |
         set -eux
 
@@ -80,7 +84,7 @@ jobs:
 
     - name: Delete untagged images
       uses: actions/github-script@v6
-      if: ${{ github.ref_name == 'main' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
+      if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
       with:
         github-token: ${{ secrets.GHA_DELETE_PACKAGES }}
         script: |

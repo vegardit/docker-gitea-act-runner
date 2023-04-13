@@ -24,6 +24,21 @@
 
 ## Usage
 
+### Docker Run
+
+Running from the command line:
+
+```sh
+  docker run \
+    -e GITEA_INSTANCE_URL=https://gitea.example.com \
+    -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
+    -v /var/run/docker.sock:/var/run/docker.sock:rw \
+    --name gitea_act_runner \
+    vegardit/gitea-act-runner:latest
+```
+
+### Docker Compose
+
 Example `docker-compose.yml`:
 
 ```yaml
@@ -43,10 +58,6 @@ services:
       GITEA_INSTANCE_URL: 'https://gitea.example.com' # required
       GITEA_RUNNER_REGISTRATION_TOKEN_FILE: 'path/to/file' # one-time registration token, only required on first container start
       # or: GITEA_RUNNER_REGISTRATION_TOKEN: '<INSERT_TOKEN_HERE>'
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
 ```
 
 ### Additional environment variables

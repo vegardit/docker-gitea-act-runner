@@ -48,3 +48,7 @@ cache:
 container:
   # Which network to use for the job containers. Could be bridge, host, none, or the name of a custom network.
   network_mode: ${GITEA_RUNNER_JOB_CONTAINER_NETWORK:-bridge}
+  # Whether to use privileged mode or not when launching task containers (privileged mode is required for Docker-in-Docker).
+  privileged: ${GITEA_RUNNER_JOB_CONTAINER_PRIVILEGED:-false}
+  # Additional container launch options (eg, --add-host=my.gitea.url:host-gateway)
+  options: ${GITEA_RUNNER_JOB_CONTAINER_OPTIONS:-}

@@ -147,7 +147,7 @@ ENV \
   #
   GITEA_INSTANCE_INSECURE='false' \
   #
-  GITEA_RUNNER_JOB_NETWORK='bridge' \
+  GITEA_RUNNER_JOB_CONTAINER_NETWORK='bridge' \
   GITEA_RUNNER_ACTION_CACHE_DIR='/data/cache/actions' \
   #
   ACT_CACHE_SERVER_ENABLED='true' \

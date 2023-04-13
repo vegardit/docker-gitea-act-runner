@@ -47,4 +47,4 @@ cache:
 
 container:
   # Which network to use for the job containers. Could be bridge, host, none, or the name of a custom network.
-  network_mode: ${GITEA_RUNNER_JOB_NETWORK:-bridge}
+  network_mode: ${GITEA_RUNNER_JOB_CONTAINER_NETWORK:-bridge}

@@ -75,7 +75,7 @@ GITEA_RUNNER_ENV_FILE|`/data/.env`|Extra environment variables to run jobs from 
 GITEA_RUNNER_FETCH_TIMEOUT|`5s`|The timeout for fetching the job from the Gitea instance.
 GITEA_RUNNER_FETCH_INTERVAL|`2s`|The interval for fetching the job from the Gitea instance.
 GITEA_RUNNER_MAX_PARALLEL_JOBS|`1`|Maximum number of concurrently executed jobs
-GITEA_RUNNER_JOB_NETWORK|`bridge`|Docker network to use with job containers. Can be `bridge`, `host`, `none`, or the name of a custom network.
+GITEA_RUNNER_JOB_CONTAINER_NETWORK|`bridge`|Docker network to use with job containers. Can be `bridge`, `host`, `none`, or the name of a custom network.
 GITEA_RUNNER_JOB_TIMEOUT|`3h`|The maximum time a job can run before it is cancelled.
 GITEA_RUNNER_ENV_VAR_**N**_NAME|`none`|Name of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_NAME=MY_AUTH_TOKEN`
 GITEA_RUNNER_ENV_VAR_**N**_VALUE|`<empty>`|Value of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_VALUE=SGVsbG8gbXkgZnJpZW5kIQ==`

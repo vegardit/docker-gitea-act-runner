@@ -125,7 +125,6 @@ EOF
 # runtime image
 ######################
 FROM runtime-base-image
-COPY --from=build-image /usr/bin/docker /usr/bin/docker
 COPY --from=build-image /usr/local/bin/act_runner /usr/local/bin/act_runner
 
 ARG BUILD_DATE

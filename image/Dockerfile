@@ -89,22 +89,6 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   fi
 
   echo "#################################################"
-  echo "Installing latest Docker client..."
-  echo "#################################################"
-  docker_cli_package=$(curl -fLsS https://download.docker.com/linux/static/stable/x86_64/ | grep -oP '(?<=>)docker-\d+.\d+.\d+.tgz(?=</a>)' | tail -1)
-  docker_cli_download_url=https://download.docker.com/linux/static/stable/x86_64/$docker_cli_package
-  echo "Downloading [$docker_cli_download_url]..."
-  curl -fL $docker_cli_download_url | tar zxv -C /usr/bin --strip-components=1 docker/docker
-  ls -l /usr/bin/docker
-  echo "Stripping..."
-  strip --strip-unneeded /usr/bin/docker
-  ls -l /usr/bin/docker
-  if [[ $UPX_COMPRESS == "true" ]]; then
-     /opt/upx/upx -9 /usr/bin/docker
-  fi
-  docker --version
-
-  echo "#################################################"
   echo "Downloading Gitea act runner..."
   echo "#################################################"
   curl -fsSL $ACT_RUNNER_DOWNLOAD_URL -o /usr/local/bin/act_runner

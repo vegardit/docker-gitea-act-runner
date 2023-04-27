@@ -64,7 +64,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG LC_ALL=C
 ARG INSTALL_SUPPORT_TOOLS=0
 
-ARG ACT_RUNNER_DOWNLOAD_URL=https://dl.gitea.com/act_runner/main/act_runner-main-linux-amd64
+ARG ACT_RUNNER_DOWNLOAD_URL
 ARG UPX_COMPRESS=true
 
 RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF

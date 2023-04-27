@@ -59,6 +59,10 @@ if [[ ! -s .runner ]]; then
     read -r GITEA_RUNNER_REGISTRATION_TOKEN < "$GITEA_RUNNER_REGISTRATION_TOKEN_FILE"
   fi
 
+  log INFO "Trying to register runner with Gitea..."
+  log INFO "  GITEA_INSTANCE_URL=$GITEA_INSTANCE_URL"
+  log INFO "  GITEA_RUNNER_NAME=$GITEA_RUNNER_NAME"
+  log INFO "  GITEA_RUNNER_LABELS=$GITEA_RUNNER_LABELS"
   wait_until=$(( $(date +%s) + $GITEA_RUNNER_REGISTRATION_TIMEOUT ))
   while true; do
     if act_runner register \

@@ -131,6 +131,10 @@ ENV \
   #
   GITEA_RUNNER_NAME='' \
   GITEA_RUNNER_LABELS='' \
+  GITEA_RUNNER_LABELS_DEFAULT='\
+ubuntu-latest:docker://catthehacker/ubuntu:runner-22.04,\
+ubuntu-22.04:docker://catthehacker/ubuntu:runner-22.04,\
+ubuntu-20.04:docker://catthehacker/ubuntu:runner-20.04' \
   GITEA_RUNNER_UID=1000 \
   GITEA_RUNNER_GID=1000 \
   #

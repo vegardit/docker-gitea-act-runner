@@ -59,6 +59,10 @@ if [[ ! -s .runner ]]; then
     read -r GITEA_RUNNER_REGISTRATION_TOKEN < "$GITEA_RUNNER_REGISTRATION_TOKEN_FILE"
   fi
 
+  if [[ -z ${GITEA_RUNNER_LABELS:-} ]]; then
+    GITEA_RUNNER_LABELS=$GITEA_RUNNER_LABELS_DEFAULT
+  fi
+
   log INFO "Trying to register runner with Gitea..."
   log INFO "  GITEA_INSTANCE_URL=$GITEA_INSTANCE_URL"
   log INFO "  GITEA_RUNNER_NAME=$GITEA_RUNNER_NAME"

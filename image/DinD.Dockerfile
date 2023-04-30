@@ -80,6 +80,39 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
   echo "#################################################"
+  echo "Installing docker engine..."
+  echo "#################################################"
+  # https://docs.docker.com/engine/install/debian/#install-using-the-repository
+  apt-get install --no-install-recommends -y gnupg
+  install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  chmod a+r /etc/apt/keyrings/docker.gpg
+  echo \
+    "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list
+  apt-get update
+  apt-get install --no-install-recommends -y docker-ce docker-ce-cli containerd.io fuse-overlayfs
+
+  minimize /usr/bin/containerd* /usr/bin/ctr /usr/bin/docker* /usr/bin/runc
+
+  docker --version
+  runc --version
+
+  # https://github.com/docker/for-linux/issues/1437#issuecomment-1293818806
+  update-alternatives --set iptables /usr/sbin/iptables-legacy
+  update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
+  # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+  sudo addgroup --system dockremap
+  sudo adduser --system --ingroup dockremap dockremap
+  echo 'dockremap:165536:65536' | sudo tee -a /etc/subuid
+  echo 'dockremap:165536:65536' | sudo tee -a /etc/subgid
+
+  usermod -aG docker act
+
+  apt-get remove -y gnupg
+
+  echo "#################################################"
   echo "Cleanup..."
   echo "#################################################"
   apt-get remove -y binutils curl
@@ -161,6 +194,7 @@ COPY .shared/lib/bash-init.sh /opt/bash-init.sh
 USER act
 
 VOLUME /data
+VOLUME /var/lib/docker
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 

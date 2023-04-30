@@ -48,6 +48,12 @@ if [ -n "${GITEA_RUNNER_GID:-}" ]; then
 fi
 sudo chown -R act:act /data
 
+if [[ -f /usr/bin/dockerd ]]; then
+  log INFO "Starting docker engine..."
+  sudo service docker start
+  while [[ ! -e /var/run/docker.sock ]]; do sleep 2; done
+fi
+
 docker_group=$(stat -c '%G' /var/run/docker.sock)
 if [[ $docker_group == "UNKNOWN" ]]; then
   docker_gid=$(stat -c '%g' /var/run/docker.sock)

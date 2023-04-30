@@ -28,7 +28,7 @@ if [[ $OSTYPE == "cygwin" || $OSTYPE == "msys" ]]; then
 fi
 
 DOCKER_BUILDKIT=1 docker build "$project_root" \
-   --file "image/Dockerfile" \
+   --file "image/$DOCKER_FILE" \
    --progress=plain \
    --pull \
    --build-arg INSTALL_SUPPORT_TOOLS=${INSTALL_SUPPORT_TOOLS:-0} \

@@ -24,41 +24,76 @@
 
 ## Usage
 
+The docker image comes in two flavors:
+- `vegardit/gitea-act-runner:latest`: only contains the Gitea act_runner and executes workflows in containers of the docker engine running act_runner itself (DooD / Docker-out-of-Docker approach)
+- `vegardit/gitea-act-runner:dind-latest`: executes workflows using an embedded docker engine (DinD / Docker-in-Docker approach) providing better process isolation
+
 ### Docker Run
 
 Running from the command line:
 
-```sh
-  docker run \
-    -e GITEA_INSTANCE_URL=https://gitea.example.com \
-    -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
-    -v /var/run/docker.sock:/var/run/docker.sock:rw \
-    --name gitea_act_runner \
-    vegardit/gitea-act-runner:latest
-```
+- Docker-out-of-Docker approach
+   ```sh
+     docker run \
+       -e GITEA_INSTANCE_URL=https://gitea.example.com \
+       -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
+       -v /var/run/docker.sock:/var/run/docker.sock:rw \
+       --name gitea_act_runner \
+       vegardit/gitea-act-runner:latest
+   ```
+
+- Docker-in-Docker approach
+   ```sh
+     docker run \
+       -e GITEA_INSTANCE_URL=https://gitea.example.com \
+       -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
+       --privileged
+       --name gitea_act_runner \
+       vegardit/gitea-act-runner:dind-latest
+   ```
 
 ### Docker Compose
 
 Example `docker-compose.yml`:
 
-```yaml
-version: '3.8' # https://docs.docker.com/compose/compose-file/compose-versioning/
+- Docker-out-of-Docker approach
+   ```yaml
+   version: '3.8' # https://docs.docker.com/compose/compose-file/compose-versioning/
 
-services:
+   services:
 
-  gitea_act_runner:
-    image: vegardit/gitea-act-runner:latest
-    #image: ghcr.io/vegardit/gitea-act-runner:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:rw
-      - /my/path/to/data/dir:/data:rw # the config file is located at /data/.runner and needs to survive container restarts
-    environment:
-      TZ: "Europe/Berlin"
-      # config parameters for initial runner registration:
-      GITEA_INSTANCE_URL: 'https://gitea.example.com' # required
-      GITEA_RUNNER_REGISTRATION_TOKEN_FILE: 'path/to/file' # one-time registration token, only required on first container start
-      # or: GITEA_RUNNER_REGISTRATION_TOKEN: '<INSERT_TOKEN_HERE>'
-```
+     gitea_act_runner:
+       image: vegardit/gitea-act-runner:latest
+       #image: ghcr.io/vegardit/gitea-act-runner:latest
+       volumes:
+         - /var/run/docker.sock:/var/run/docker.sock:rw
+         - /my/path/to/data/dir:/data:rw # the config file is located at /data/.runner and needs to survive container restarts
+       environment:
+         TZ: "Europe/Berlin"
+         # config parameters for initial runner registration:
+         GITEA_INSTANCE_URL: 'https://gitea.example.com' # required
+         GITEA_RUNNER_REGISTRATION_TOKEN_FILE: 'path/to/file' # one-time registration token, only required on first container start
+         # or: GITEA_RUNNER_REGISTRATION_TOKEN: '<INSERT_TOKEN_HERE>'
+   ```
+
+- Docker-in-Docker approach
+   ```yaml
+   version: '3.8' # https://docs.docker.com/compose/compose-file/compose-versioning/
+
+   services:
+
+     gitea_act_runner:
+       image: vegardit/gitea-act-runner:dind-latest
+       privileged: true
+       volumes:
+         - /my/path/to/data/dir:/data:rw # the config file is located at /data/.runner and needs to survive container restarts
+       environment:
+         TZ: "Europe/Berlin"
+         # config parameters for initial runner registration:
+         GITEA_INSTANCE_URL: 'https://gitea.example.com' # required
+         GITEA_RUNNER_REGISTRATION_TOKEN_FILE: 'path/to/file' # one-time registration token, only required on first container start
+         # or: GITEA_RUNNER_REGISTRATION_TOKEN: '<INSERT_TOKEN_HERE>'
+   ```
 
 ### Additional environment variables
 

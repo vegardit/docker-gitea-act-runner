@@ -28,13 +28,20 @@ defaults:
 
 env:
   DOCKER_IMAGE_REPO: vegardit/gitea-act-runner
-  DOCKER_IMAGE_TAG: latest
   TRIVY_CACHE_DIR: ~/.trivy/cache
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        include:
+          - DOCKER_FILE: Dockerfile
+            DOCKER_IMAGE_TAG: latest
+          - DOCKER_FILE: DinD.Dockerfile
+            DOCKER_IMAGE_TAG: dind-latest
+      fail-fast: true
     steps:
     - name: Show environment variables
       run: env | sort
@@ -63,6 +70,8 @@ jobs:
         DOCKER_REGISTRY: docker.io
         DOCKER_REGISTRY_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
         DOCKER_REGISTRY_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
+        DOCKER_IMAGE_TAG: ${{ matrix.DOCKER_IMAGE_TAG }}
+        DOCKER_FILE: ${{ matrix.DOCKER_FILE }}
         TRIVY_GITHUB_TOKEN: ${{ github.token }}
       run: |
         set -eu
@@ -74,13 +83,15 @@ jobs:
 
     - name: Publish Docker image to GH registry
       if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
+      env:
+        DOCKER_IMAGE_TAG: ${{ matrix.DOCKER_IMAGE_TAG }}
       run: |
         set -eux
 
         echo "${{ github.token }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
 
-        docker image tag $DOCKER_IMAGE_REPO ghcr.io/$DOCKER_IMAGE_REPO
-        docker push ghcr.io/$DOCKER_IMAGE_REPO
+        docker image tag $DOCKER_IMAGE_REPO:$DOCKER_IMAGE_TAG ghcr.io/$DOCKER_IMAGE_REPO:$DOCKER_IMAGE_TAG
+        docker push ghcr.io/$DOCKER_IMAGE_REPO:$DOCKER_IMAGE_TAG
 
     - name: Delete untagged images
       uses: actions/github-script@v6

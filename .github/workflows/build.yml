@@ -49,9 +49,14 @@ jobs:
     - name: Git Checkout
       uses: actions/checkout@v3 #https://github.com/actions/checkout
 
+    - name: Check Dockerfile
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: image/${{ matrix.DOCKER_FILE }}
+        ignore: DL3008,SC1091 # https://github.com/hadolint/hadolint/wiki/DL3008
+
     - name: Cache trivy cache
       uses: actions/cache@v3
-      if: env.ACT != 'true' # https://github.com/nektos/act#skipping-steps
       with:
         path: ${{ env.TRIVY_CACHE_DIR }}
         # https://github.com/actions/cache/issues/342#issuecomment-673371329

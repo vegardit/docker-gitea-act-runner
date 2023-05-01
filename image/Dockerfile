@@ -15,7 +15,7 @@ LABEL maintainer="Vegard IT GmbH (vegardit.com)"
 
 USER root
 
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG LC_ALL=C
@@ -29,18 +29,17 @@ ARG BASE_LAYER_CACHE_KEY
 
 RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
 
-  set -euo pipefail
   /mnt/shared/cmd/debian-install-os-updates.sh
   /mnt/shared/cmd/debian-install-support-tools.sh
 
   function minimize() {
-     ls -l $@
-     echo "Stripping [$@]..."
-     command strip --strip-unneeded $@
-     ls -l $@
+     ls -l "$@"
+     echo "Stripping [$*]..."
+     command strip --strip-unneeded "$@"
+     ls -l "$@"
      if [[ $UPX_COMPRESS == "true" ]]; then
-       echo "Compressing [$@]..."
-       /opt/upx/upx -9 $@ || true
+       echo "Compressing [$*]..."
+       /opt/upx/upx -9 "$@" || true
      fi
   }
 
@@ -57,7 +56,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     mkdir /opt/upx
     upx_download_url=$(curl -fsSL https://api.github.com/repos/upx/upx/releases/latest | grep browser_download_url | grep amd64_linux.tar.xz | cut "-d\"" -f4)
     echo "Downloading [$upx_download_url]..."
-    curl -fL $upx_download_url | tar Jxv -C /opt/upx --strip-components=1
+    curl -fL "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
     /opt/upx/upx --version
   fi
 
@@ -66,7 +65,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   echo "#################################################"
   echo "Downloading Gitea act runner..."
   echo "#################################################"
-  curl -fsSL $ACT_RUNNER_DOWNLOAD_URL -o /usr/local/bin/act_runner
+  curl -fsSL "$ACT_RUNNER_DOWNLOAD_URL" -o /usr/local/bin/act_runner
   chmod 755 /usr/local/bin/act_runner
   minimize /usr/local/bin/act_runner
   act_runner --version
@@ -139,8 +138,6 @@ ubuntu-20.04:docker://catthehacker/ubuntu:runner-20.04' \
   ACT_CACHE_SERVER_PORT=0
 
 RUN <<EOF
-
-  set -euo pipefail
 
   echo "#################################################"
   echo "Writing build_info..."

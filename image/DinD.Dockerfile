@@ -15,7 +15,7 @@ LABEL maintainer="Vegard IT GmbH (vegardit.com)"
 
 USER root
 
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG LC_ALL=C
@@ -29,18 +29,17 @@ ARG BASE_LAYER_CACHE_KEY
 
 RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
 
-  set -euo pipefail
   /mnt/shared/cmd/debian-install-os-updates.sh
   /mnt/shared/cmd/debian-install-support-tools.sh
 
   function minimize() {
-     ls -l $@
-     echo "Stripping [$@]..."
-     command strip --strip-unneeded $@
-     ls -l $@
+     ls -l "$@"
+     echo "Stripping [$*]..."
+     command strip --strip-unneeded "$@"
+     ls -l "$@"
      if [[ $UPX_COMPRESS == "true" ]]; then
-       echo "Compressing [$@]..."
-       /opt/upx/upx -9 $@ || true
+       echo "Compressing [$*]..."
+       /opt/upx/upx -9 "$@" || true
      fi
   }
 
@@ -57,7 +56,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     mkdir /opt/upx
     upx_download_url=$(curl -fsSL https://api.github.com/repos/upx/upx/releases/latest | grep browser_download_url | grep amd64_linux.tar.xz | cut "-d\"" -f4)
     echo "Downloading [$upx_download_url]..."
-    curl -fL $upx_download_url | tar Jxv -C /opt/upx --strip-components=1
+    curl -fL "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
     /opt/upx/upx --version
   fi
 
@@ -66,7 +65,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   echo "#################################################"
   echo "Downloading Gitea act runner..."
   echo "#################################################"
-  curl -fsSL $ACT_RUNNER_DOWNLOAD_URL -o /usr/local/bin/act_runner
+  curl -fsSL "$ACT_RUNNER_DOWNLOAD_URL" -o /usr/local/bin/act_runner
   chmod 755 /usr/local/bin/act_runner
   minimize /usr/local/bin/act_runner
   act_runner --version
@@ -89,7 +88,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   chmod a+r /etc/apt/keyrings/docker.gpg
   echo \
     "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-    "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list
+    "$(source /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list
   apt-get update
   apt-get install --no-install-recommends -y docker-ce docker-ce-cli containerd.io fuse-overlayfs
 
@@ -103,10 +102,10 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 
   # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
-  sudo addgroup --system dockremap
-  sudo adduser --system --ingroup dockremap dockremap
-  echo 'dockremap:165536:65536' | sudo tee -a /etc/subuid
-  echo 'dockremap:165536:65536' | sudo tee -a /etc/subgid
+  addgroup --system dockremap
+  adduser --system --ingroup dockremap dockremap
+  echo 'dockremap:165536:65536' | tee -a /etc/subuid
+  echo 'dockremap:165536:65536' | tee -a /etc/subgid
 
   usermod -aG docker act
 
@@ -172,8 +171,6 @@ ubuntu-20.04:docker://catthehacker/ubuntu:runner-20.04' \
   ACT_CACHE_SERVER_PORT=0
 
 RUN <<EOF
-
-  set -euo pipefail
 
   echo "#################################################"
   echo "Writing build_info..."

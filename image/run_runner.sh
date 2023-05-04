@@ -27,7 +27,7 @@ fi
 # https://gitea.com/gitea/act/src/commit/62abf4fe116865f6edf85d6bce822050dd01ac78/pkg/runner/run_context.go#L360-L371
 mkdir -p $GITEA_RUNNER_ACTION_CACHE_DIR
 mkdir -p /tmp/.cache
-ln -s $GITEA_RUNNER_ACTION_CACHE_DIR /tmp/.cache/act
+ln -sfn $GITEA_RUNNER_ACTION_CACHE_DIR /tmp/.cache/act
 export XDG_CACHE_HOME=/tmp/.cache
 
 

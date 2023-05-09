@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-ArtifactOfProjectHomePage: https://github.com/vegardit/docker-gitea-act-runner
 #
-
 source /opt/bash-init.sh
 
 #################################################

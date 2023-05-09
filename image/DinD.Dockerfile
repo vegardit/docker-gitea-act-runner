@@ -1,5 +1,6 @@
 #syntax=docker/dockerfile:1.4
-# see https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/syntax.md
+# see https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/syntax.md#user-content-syntax
+# see https://docs.docker.com/build/dockerfile/frontend/
 # see https://docs.docker.com/engine/reference/builder/#syntax
 #
 # SPDX-FileCopyrightText: © Vegard IT GmbH (https://vegardit.com)
@@ -9,7 +10,7 @@
 #
 # https://hub.docker.com/_/debian?tab=tags&name=stable-slim
 
-FROM debian:stable-slim as runtime-base-image
+FROM debian:stable-slim
 
 LABEL maintainer="Vegard IT GmbH (vegardit.com)"
 

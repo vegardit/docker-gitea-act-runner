@@ -23,7 +23,6 @@ ARG LC_ALL=C
 
 ARG INSTALL_SUPPORT_TOOLS=0
 
-ARG ACT_RUNNER_DOWNLOAD_URL
 ARG UPX_COMPRESS=true
 
 ARG BASE_LAYER_CACHE_KEY
@@ -57,7 +56,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     mkdir /opt/upx
     upx_download_url=$(curl -fsSL https://api.github.com/repos/upx/upx/releases/latest | grep browser_download_url | grep amd64_linux.tar.xz | cut "-d\"" -f4)
     echo "Downloading [$upx_download_url]..."
-    curl -fL "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
+    curl -fsSL "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
     /opt/upx/upx --version
   fi
 
@@ -66,7 +65,15 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   echo "#################################################"
   echo "Downloading Gitea act runner..."
   echo "#################################################"
-  curl -fsSL "$ACT_RUNNER_DOWNLOAD_URL" -o /usr/local/bin/act_runner
+  arch=$(dpkg --print-architecture)
+  case $arch in
+    armhf) arch=arm-7 ;;
+    amd64|arm64) ;;
+    *) echo "Unsupported arch: $arch"; exit 1;;
+  esac
+  act_runner_download_url=$(curl -sSfL https://gitea.com/gitea/act_runner/releases | grep -oP "https://gitea.com/gitea/act_runner/releases/download/.*-linux-${arch}" | head -1)
+  echo "Downloading [$act_runner_download_url]..."
+  curl -fsSL "$act_runner_download_url" -o /usr/local/bin/act_runner
   chmod 755 /usr/local/bin/act_runner
   minimize /usr/local/bin/act_runner
   act_runner --version

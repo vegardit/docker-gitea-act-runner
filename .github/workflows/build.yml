@@ -72,31 +72,31 @@ jobs:
 
     - name: Build ${{ env.DOCKER_IMAGE_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
       env:
-        DOCKER_REGISTRY: docker.io
-        DOCKER_REGISTRY_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-        DOCKER_REGISTRY_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
         DOCKER_IMAGE_TAG: ${{ matrix.DOCKER_IMAGE_TAG }}
         DOCKER_FILE: ${{ matrix.DOCKER_FILE }}
         TRIVY_GITHUB_TOKEN: ${{ github.token }}
-      run: |
-        set -eu
-        if [[ $GITHUB_REF_NAME == "main" && $GITHUB_EVENT_NAME != "pull_request" && ${ACT:-} != "true" ]]; then
-          export DOCKER_PUSH=1
-          echo "$DOCKER_REGISTRY_TOKEN" | docker login -u="$DOCKER_REGISTRY_USERNAME" "$DOCKER_REGISTRY" --password-stdin
-        fi
-        bash build-image.sh
+      run: bash build-image.sh
+
+    - name: Publish Docker image to docker.io registry
+      if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
+      uses: truemark/skopeo-copy-action@v1 # https://github.com/truemark/skopeo-copy-action
+      # alternative for skopeo is https://github.com/regclient/regclient via iarekylew00t/regctl-installer
+      with:
+        src-image: "docker://${{ env.DOCKER_IMAGE_REPO }}:${{ matrix.DOCKER_IMAGE_TAG }}"
+        dest-image: "docker://docker.io/${{ env.DOCKER_IMAGE_REPO }}:${{ matrix.DOCKER_IMAGE_TAG }}"
+        dest-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
+        dest-password: "${{ secrets.DOCKER_HUB_TOKEN }}"
+        multi-arch: "all"
 
     - name: Publish Docker image to GH registry
       if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
-      env:
-        DOCKER_IMAGE_TAG: ${{ matrix.DOCKER_IMAGE_TAG }}
-      run: |
-        set -eux
-
-        echo "${{ github.token }}" | docker login https://ghcr.io -u ${{ github.actor }} --password-stdin
-
-        docker image tag $DOCKER_IMAGE_REPO:$DOCKER_IMAGE_TAG ghcr.io/$DOCKER_IMAGE_REPO:$DOCKER_IMAGE_TAG
-        docker push ghcr.io/$DOCKER_IMAGE_REPO:$DOCKER_IMAGE_TAG
+      uses: truemark/skopeo-copy-action@v1 # https://github.com/truemark/skopeo-copy-action
+      with:
+        src-image: "docker://${{ env.DOCKER_IMAGE_REPO }}:${{ matrix.DOCKER_IMAGE_TAG }}"
+        dest-image: "docker://ghcr.io/${{ env.DOCKER_IMAGE_REPO }}:${{ matrix.DOCKER_IMAGE_TAG }}"
+        dest-username: "${{ github.actor }}"
+        dest-password: "${{ github.token }}"
+        multi-arch: "all"
 
     - name: Delete untagged images
       uses: actions/github-script@v6

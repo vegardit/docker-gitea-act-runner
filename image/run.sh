@@ -42,7 +42,7 @@ if [ -n "${GITEA_RUNNER_GID:-}" ]; then
   effective_gid=$(id -g act)
   if [ "$GITEA_RUNNER_GID" != "$effective_gid" ]; then
     log INFO "Changing GID of user [act] from $effective_gid to $GITEA_RUNNER_GID..."
-    sudo usermod -o -u "$GITEA_RUNNER_GID" act
+    sudo usermod -o -g "$GITEA_RUNNER_GID" act
   fi
 fi
 sudo chown -R act:act /data

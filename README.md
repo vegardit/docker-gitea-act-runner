@@ -7,6 +7,7 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 
 1. [What is it?](#what-is-it)
+1. [Usage](#usage)
 1. [License](#license)
 
 
@@ -14,7 +15,7 @@
 
 `debian:stable-slim` based Docker image containing [Gitea](https://gitea.com)'s [act_runner](https://gitea.com/gitea/act_runner/)
 
-### Why not using Alpine Linux?
+#### Why not using Alpine Linux?
 - musl-libc - Alpine's Greatest Weakness https://www.linkedin.com/pulse/musl-libc-alpines-greatest-weakness-rogan-lynch
 - Why I will never use Alpine Linux ever again https://martinheinz.dev/blog/92
 - Does Alpine have known DNS issue within Kubernetes? https://stackoverflow.com/questions/65181012/
@@ -22,7 +23,7 @@
 - Performance issue with alpine musl library https://unix.stackexchange.com/questions/729342/
 
 
-## Usage
+## <a name="usage"></a>Usage
 
 The docker image comes in two flavors:
 - `vegardit/gitea-act-runner:latest`: only contains the Gitea act_runner and executes workflows in containers of the docker engine running act_runner itself (DooD / Docker-out-of-Docker approach)

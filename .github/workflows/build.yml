@@ -70,29 +70,24 @@ jobs:
     - name: Install dos2unix
       run: sudo apt-get install --no-install-recommends -y dos2unix
 
+    - name: Login to docker.io
+      if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
+      run: |
+        docker login docker.io -u "${{ secrets.DOCKER_HUB_USERNAME }}" -p "${{ secrets.DOCKER_HUB_TOKEN }}"
+
     - name: Build ${{ env.DOCKER_IMAGE_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
       env:
         DOCKER_IMAGE_TAG: ${{ matrix.DOCKER_IMAGE_TAG }}
         DOCKER_FILE: ${{ matrix.DOCKER_FILE }}
+        DOCKER_PUSH: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }}
         TRIVY_GITHUB_TOKEN: ${{ github.token }}
       run: bash build-image.sh
-
-    - name: Publish Docker image to docker.io registry
-      if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
-      uses: truemark/skopeo-copy-action@v1 # https://github.com/truemark/skopeo-copy-action
-      # alternative for skopeo is https://github.com/regclient/regclient via iarekylew00t/regctl-installer
-      with:
-        src-image: "docker://${{ env.DOCKER_IMAGE_REPO }}:${{ matrix.DOCKER_IMAGE_TAG }}"
-        dest-image: "docker://docker.io/${{ env.DOCKER_IMAGE_REPO }}:${{ matrix.DOCKER_IMAGE_TAG }}"
-        dest-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
-        dest-password: "${{ secrets.DOCKER_HUB_TOKEN }}"
-        multi-arch: "all"
 
     - name: Publish Docker image to GH registry
       if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }} # https://github.com/nektos/act#skipping-steps
       uses: truemark/skopeo-copy-action@v1 # https://github.com/truemark/skopeo-copy-action
       with:
-        src-image: "docker://${{ env.DOCKER_IMAGE_REPO }}:${{ matrix.DOCKER_IMAGE_TAG }}"
+        src-image: "docker://docker.io/${{ env.DOCKER_IMAGE_REPO }}:${{ matrix.DOCKER_IMAGE_TAG }}"
         dest-image: "docker://ghcr.io/${{ env.DOCKER_IMAGE_REPO }}:${{ matrix.DOCKER_IMAGE_TAG }}"
         dest-username: "${{ github.actor }}"
         dest-password: "${{ github.token }}"

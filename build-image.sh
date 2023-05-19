@@ -21,7 +21,7 @@ image_name=$image_repo:${DOCKER_IMAGE_TAG:-latest}
 #################################################
 # build the image
 #################################################
-echo "Building docker image [$image_name]..."
+log INFO "Building docker image [$image_name]..."
 if [[ $OSTYPE == "cygwin" || $OSTYPE == "msys" ]]; then
    project_root=$(cygpath -w "$project_root")
 fi
@@ -44,7 +44,7 @@ docker buildx build "$project_root" \
    --build-arg GIT_REPO_URL="$(git config --get remote.origin.url)" \
    --platform linux/amd64,linux/arm64,linux/arm/v7 \
    -t $image_name \
-   $(if [[ "${DOCKER_PUSH:-0}" == "1" ]]; then echo -n "--push"; fi) \
+   $(if [[ "${DOCKER_PUSH:-0}" == "true" ]]; then echo -n "--push"; fi) \
    "$@"
 docker buildx stop
 docker image pull $image_name
@@ -54,7 +54,7 @@ docker image pull $image_name
 # test image
 #################################################
 echo
-echo "Testing docker image [$image_name]..."
+log INFO "Testing docker image [$image_name]..."
 docker run --rm $image_name act_runner --version
 echo
 

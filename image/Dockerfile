@@ -83,6 +83,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   echo "#################################################"
   addgroup --gid 1000 act
   adduser --uid 1000 --ingroup act --home /data --shell /bin/bash --disabled-password --gecos "" act
+  adduser act users
   adduser act sudo
   echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 

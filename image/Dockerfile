@@ -27,6 +27,9 @@ ARG UPX_COMPRESS=true
 
 ARG BASE_LAYER_CACHE_KEY
 
+# dood|dind
+ARG FLAVOR
+
 RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
 
   /mnt/shared/cmd/debian-install-os-updates.sh
@@ -54,7 +57,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     echo "#################################################"
     apt-get install --no-install-recommends -y xz-utils
     mkdir /opt/upx
-    upx_download_url=$(curl -fsSL https://api.github.com/repos/upx/upx/releases/latest | grep browser_download_url | grep amd64_linux.tar.xz | cut "-d\"" -f4)
+    upx_download_url=$(curl -fsSL "https://api.github.com/repos/upx/upx/releases/latest" | grep browser_download_url | grep amd64_linux.tar.xz | cut "-d\"" -f4)
     echo "Downloading [$upx_download_url]..."
     curl -fsSL "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
     /opt/upx/upx --version
@@ -71,7 +74,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     amd64|arm64) ;;
     *) echo "Unsupported arch: $arch"; exit 1;;
   esac
-  act_runner_download_url=$(curl -sSfL https://gitea.com/gitea/act_runner/releases | grep -oP "https://gitea.com/gitea/act_runner/releases/download/.*-linux-${arch}" | head -1)
+  act_runner_download_url=$(curl -fsSL "https://gitea.com/gitea/act_runner/releases" | grep -oP "https://gitea.com/gitea/act_runner/releases/download/.*-linux-${arch}" | head -1)
   echo "Downloading [$act_runner_download_url]..."
   curl -fsSL "$act_runner_download_url" -o /usr/local/bin/act_runner
   chmod 755 /usr/local/bin/act_runner
@@ -86,6 +89,43 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   adduser act users
   adduser act sudo
   echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+  if [[ $FLAVOR == dind* ]]; then
+    echo "#################################################"
+    echo "Installing docker engine..."
+    echo "#################################################"
+    # https://docs.docker.com/engine/install/debian/#install-using-the-repository
+    apt-get install --no-install-recommends -y gnupg
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL "https://download.docker.com/linux/debian/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+    echo \
+      "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+      "$(source /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list
+    apt-get update
+    apt-get install --no-install-recommends -y docker-ce containerd.io fuse-overlayfs
+    apt-get remove -y gnupg
+
+    minimize /usr/bin/containerd* /usr/bin/ctr /usr/bin/docker* /usr/bin/runc
+
+    docker --version
+    runc --version
+
+    # https://github.com/docker/for-linux/issues/1437#issuecomment-1293818806
+    update-alternatives --set iptables /usr/sbin/iptables-legacy
+    update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
+    # set up subuid/subgid so that "--userns-remap=default" works out-of-the-box
+    addgroup --system dockremap
+    adduser --system --ingroup dockremap dockremap
+    echo 'dockremap:165536:65536' | tee -a /etc/subuid
+    echo 'dockremap:165536:65536' | tee -a /etc/subgid
+
+    curl -sSfL "https://raw.githubusercontent.com/moby/moby/v24.0.2/hack/dind" -o /usr/local/bin/dind-hack
+    chmod +x /usr/local/bin/dind-hack
+
+    usermod -aG docker act
+  fi
 
   echo "#################################################"
   echo "Cleanup..."
@@ -167,6 +207,9 @@ COPY .shared/lib/bash-init.sh /opt/bash-init.sh
 USER act
 
 VOLUME /data
+
+# only for dind relevant
+VOLUME /var/lib/docker
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
 

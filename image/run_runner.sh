@@ -58,11 +58,12 @@ effective_config_file=/tmp/gitea_act_runner_config.yml
 rm -f "$effective_config_file"
 if [[ ${GITEA_RUNNER_LOG_EFFECTIVE_CONFIG:-false} == "true" ]]; then
   log INFO "Effective runner config [$effective_config_file]:"
+  echo "==========================================================="
   while IFS= read -r line; do
     line=${line//\"/\\\"} # escape double quotes
     eval "echo \"$line\"" | tee -a "$effective_config_file"
   done < $GITEA_RUNNER_CONFIG_TEMPLATE_FILE
-  echo
+  echo "==========================================================="
 else
   while IFS= read -r line; do
     line=${line//\"/\\\"} # escape double quotes

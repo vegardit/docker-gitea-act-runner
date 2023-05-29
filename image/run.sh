@@ -34,10 +34,18 @@ fi
 # start docker deamon (if installed = DinD)
 #################################################################
 if [[ -f /usr/bin/dockerd ]]; then
-  [[ $EUID -eq 0 ]] || sudo -E bash ${BASH_SOURCE[0]}
-  log INFO "Starting docker engine..."
+  log INFO "Starting Docker engine..."
+  sudo rm -rf /var/run/docker.pid /run/docker/containerd/containerd.pid
+  sudo /usr/local/bin/dind-hack true
   sudo service docker start
-  while [[ ! -e /var/run/docker.sock ]]; do sleep 2; done
+  while ! docker stats --no-stream &>/dev/null; do
+    log INFO "Waiting for Docker engine to start..."
+    sleep 2
+    tail -n 1 /var/log/docker.log
+  done
+  echo "==========================================================="
+  docker info
+  echo "==========================================================="
 fi
 
 

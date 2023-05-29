@@ -31,7 +31,7 @@ docker run --privileged --rm tonistiigi/binfmt --install all
 export DOCKER_CLI_EXPERIMENTAL=enabled # prevents "docker: 'buildx' is not a docker command."
 docker buildx create --use # prevents: error: multiple platforms feature is currently not supported for docker driver. Please switch to a different driver (eg. "docker buildx create --use")
 docker buildx build "$project_root" \
-   --file "image/$DOCKER_FILE" \
+   --file "image/Dockerfile" \
    --progress=plain \
    --pull \
    --build-arg INSTALL_SUPPORT_TOOLS=${INSTALL_SUPPORT_TOOLS:-0} \
@@ -42,12 +42,19 @@ docker buildx build "$project_root" \
    --build-arg GIT_COMMIT_DATE="$(date -d @$(git log -1 --format='%at') --utc +'%Y-%m-%d %H:%M:%S UTC')" \
    --build-arg GIT_COMMIT_HASH="$(git rev-parse --short HEAD)" \
    --build-arg GIT_REPO_URL="$(git config --get remote.origin.url)" \
-   --platform linux/amd64,linux/arm64,linux/arm/v7 \
+   --build-arg FLAVOR=$DOCKER_IMAGE_FLAVOR \
+   $(if [[ "${ACT:-}" == "true" ]]; then \
+     echo -n "--output type=docker"; \
+   else \
+     echo -n "--platform linux/amd64,linux/arm64,linux/arm/v7"; \
+   fi) \
    -t $image_name \
-   $(if [[ "${DOCKER_PUSH:-0}" == "true" ]]; then echo -n "--push"; fi) \
+   $(if [[ "${DOCKER_PUSH:-}" == "true" ]]; then echo -n "--push"; fi) \
    "$@"
 docker buildx stop
-docker image pull $image_name
+if [[ "${DOCKER_PUSH:-}" == "true" ]]; then
+  docker image pull $image_name
+fi
 
 
 #################################################

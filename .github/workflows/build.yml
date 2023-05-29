@@ -37,9 +37,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - DOCKER_FILE: Dockerfile
+          - DOCKER_IMAGE_FLAVOR: dood
             DOCKER_IMAGE_TAG: latest
-          - DOCKER_FILE: DinD.Dockerfile
+          - DOCKER_IMAGE_FLAVOR: dind
             DOCKER_IMAGE_TAG: dind-latest
       fail-fast: true
     steps:
@@ -52,7 +52,7 @@ jobs:
     - name: Check Dockerfile
       uses: hadolint/hadolint-action@v3.1.0
       with:
-        dockerfile: image/${{ matrix.DOCKER_FILE }}
+        dockerfile: image/Dockerfile
         ignore: DL3008,SC1091 # https://github.com/hadolint/hadolint/wiki/DL3008
 
     - name: Cache trivy cache
@@ -78,7 +78,7 @@ jobs:
     - name: Build ${{ env.DOCKER_IMAGE_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
       env:
         DOCKER_IMAGE_TAG: ${{ matrix.DOCKER_IMAGE_TAG }}
-        DOCKER_FILE: ${{ matrix.DOCKER_FILE }}
+        DOCKER_IMAGE_FLAVOR: ${{ matrix.DOCKER_IMAGE_FLAVOR }}
         DOCKER_PUSH: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' && !env.ACT }}
         TRIVY_GITHUB_TOKEN: ${{ github.token }}
       run: bash build-image.sh

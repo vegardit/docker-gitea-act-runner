@@ -34,8 +34,9 @@ fi
 # start docker deamon (if installed = DinD)
 #################################################################
 if [[ -f /usr/bin/dockerd ]]; then
+  export DOCKER_MODE=dind
   log INFO "Starting Docker engine..."
-  sudo rm -rf /var/run/docker.pid /run/docker/containerd/containerd.pid
+  sudo rm -f /var/run/docker.pid /run/docker/containerd/containerd.pid
   sudo /usr/local/bin/dind-hack true
   sudo service docker start
   while ! docker stats --no-stream &>/dev/null; do
@@ -43,9 +44,12 @@ if [[ -f /usr/bin/dockerd ]]; then
     sleep 2
     tail -n 1 /var/log/docker.log
   done
+  export DOCKER_PID=$(</var/run/docker.pid)
   echo "==========================================================="
   docker info
   echo "==========================================================="
+else
+  export DOCKER_MODE=dood
 fi
 
 
@@ -74,5 +78,5 @@ fi
 if [[ $fixids == "true" ]]; then
   exec sudo -E bash /opt/run_fixids.sh
 else
-  bash /opt/run_runner.sh
+  exec bash /opt/run_runner.sh
 fi

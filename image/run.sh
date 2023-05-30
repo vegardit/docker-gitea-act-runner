@@ -33,7 +33,31 @@ fi
 #################################################################
 # start docker deamon (if installed = DinD)
 #################################################################
-if [[ -f /usr/bin/dockerd ]]; then
+if [[ -f /etc/init.d/docker-rootless ]]; then
+  export DOCKER_MODE=dind-rootless
+  log INFO "Starting Docker engine (rootless)..."
+  export DOCKER_HOST=unix://$HOME/.docker/run/docker.sock
+  if [ ! -f $HOME/.config/docker/daemon.json ]; then
+    # workaround for "Not using native diff for overlay2, this may cause degraded performance for building images: running in a user namespace  storage-driver=overlay2"
+    mkdir -p $HOME/.config/docker
+    echo '{"storage-driver":"fuse-overlayfs"}' > $HOME/.config/docker/daemon.json
+  fi
+
+  export container=docker # from dind-hack
+  export XDG_RUNTIME_DIR=$HOME/.docker/run
+  mkdir -p $XDG_RUNTIME_DIR
+  rm -f $XDG_RUNTIME_DIR/docker.pid $XDG_RUNTIME_DIR/docker/containerd/containerd.pid
+  /usr/bin/dockerd-rootless.sh -p $HOME/.docker/run/docker.pid > "$HOME/.docker/docker.log" 2>&1 &
+  export DOCKER_PID=$!
+  while ! docker stats --no-stream &>/dev/null; do
+    log INFO "Waiting for Docker engine to start..."
+    sleep 2
+    tail -n 1 /data/.docker/docker.log
+  done
+  echo "==========================================================="
+  docker info
+  echo "==========================================================="
+elif [[ -f /usr/bin/dockerd ]]; then
   export DOCKER_MODE=dind
   log INFO "Starting Docker engine..."
   sudo rm -f /var/run/docker.pid /run/docker/containerd/containerd.pid

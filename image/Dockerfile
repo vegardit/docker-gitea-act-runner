@@ -27,7 +27,7 @@ ARG UPX_COMPRESS=true
 
 ARG BASE_LAYER_CACHE_KEY
 
-# dood|dind
+# dood|dind|dind-rootless
 ARG FLAVOR
 
 RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
@@ -124,7 +124,24 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     curl -sSfL "https://raw.githubusercontent.com/moby/moby/v24.0.2/hack/dind" -o /usr/local/bin/dind-hack
     chmod +x /usr/local/bin/dind-hack
 
-    usermod -aG docker act
+    if [[ $FLAVOR == dind-rootless ]]; then
+      # https://docs.docker.com/engine/security/rootless/
+      apt-get install --no-install-recommends -y \
+        dbus-user-session \
+        docker-ce-rootless-extras \
+        kmod \
+        iproute2 \
+        slirp4netns \
+        uidmap
+
+      runuser -u act -g act -- /usr/bin/dockerd-rootless-setuptool.sh install --skip-iptables
+
+      # workaround "failed to load plugin io.containerd.internal.v1.opt  error="mkdir /opt/containerd: permission denied"
+      mkdir /opt/containerd
+      chown act:act /opt/containerd
+    else
+      usermod -aG docker act
+    fi
   fi
 
   echo "#################################################"

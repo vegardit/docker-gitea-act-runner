@@ -41,6 +41,8 @@ jobs:
             DOCKER_IMAGE_TAG: latest
           - DOCKER_IMAGE_FLAVOR: dind
             DOCKER_IMAGE_TAG: dind-latest
+          - DOCKER_IMAGE_FLAVOR: dind-rootless
+            DOCKER_IMAGE_TAG: dind-rootless-latest
       fail-fast: true
     steps:
     - name: Show environment variables

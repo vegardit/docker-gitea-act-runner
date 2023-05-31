@@ -25,9 +25,10 @@
 
 ## <a name="usage"></a>Usage
 
-The docker image comes in two flavors:
+The docker image comes in three flavors:
 - `vegardit/gitea-act-runner:latest`: only contains the Gitea act_runner and executes workflows in containers of the docker engine running act_runner itself (DooD / Docker-out-of-Docker approach)
 - `vegardit/gitea-act-runner:dind-latest`: executes workflows using an embedded docker engine (DinD / Docker-in-Docker approach) providing better process isolation
+- `vegardit/gitea-act-runner:dind-rootless-latest`: executes workflows using an embedded docker engine (DinD / Docker-in-Docker approach) running the docker deamon as a non-root user [(Rootless mode)](https://docs.docker.com/engine/security/rootless/)
 
 ### Docker Run
 
@@ -51,6 +52,16 @@ Running from the command line:
        --privileged
        --name gitea_act_runner \
        vegardit/gitea-act-runner:dind-latest
+   ```
+
+- Docker-in-Docker approach with Docker daemon running as a non-root user (Rootless mode)
+   ```sh
+     docker run \
+       -e GITEA_INSTANCE_URL=https://gitea.example.com \
+       -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
+       --privileged
+       --name gitea_act_runner \
+       vegardit/gitea-act-runner:dind-rootless-latest
    ```
 
 ### Docker Compose

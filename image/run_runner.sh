@@ -120,39 +120,43 @@ unset $(env | grep "^GITEA_" | cut -d= -f1)
 # run the act runner
 #################################################
 case $DOCKER_MODE in
-  dind)
-     act_runner daemon --config "$effective_config_file" &
-     act_runner_pid=$!
+  dind*)
+    act_runner daemon --config "$effective_config_file" &
+    act_runner_pid=$!
 
-     function shutdown_act() {
-       log INFO "Stopping act_runner..."
-       kill -SIGTERM $act_runner_pid || true
-     }
+    function shutdown_act() {
+      log INFO "Stopping act_runner..."
+      kill -SIGTERM $act_runner_pid || true
+    }
 
-     function shutdown_docker() {
-       log INFO "Stopping docker engine..."
-       sudo service docker stop
-       while [[ -e /proc/$DOCKER_PID ]]; do
-         log INFO "Waiting for docker engine to shutdown..."
-         sleep 2
-       done
-     }
+    function shutdown_docker() {
+      log INFO "Stopping docker engine..."
+      if [[ $DOCKER_MODE == "dind-rootless" ]]; then
+        kill -SIGTERM $DOCKER_PID
+      else
+        sudo service docker stop
+      fi
+      while [[ -e /proc/$DOCKER_PID ]]; do
+        log INFO "Waiting for docker engine to shutdown..."
+        sleep 2
+      done
+    }
 
-     trap "shutdown_act; shutdown_docker" INT TERM HUP QUIT
+    trap "shutdown_act; shutdown_docker" INT TERM HUP QUIT
 
-     # monitoring docker engine/act_runner process status
-     while [[ -e /proc/$DOCKER_PID && -e /proc/$act_runner_pid ]]; do
-       sleep 1
-     done
+    # monitoring docker engine/act_runner process status
+    while [[ -e /proc/$DOCKER_PID && -e /proc/$act_runner_pid ]]; do
+      sleep 1
+    done
 
-     if [[ -e /proc/$DOCKER_PID ]]; then
-       shutdown_docker
-     else
-       log ERROR "Docker engine unexpectly ended."
-       shutdown_act
-     fi
-     exit 1 # there is no scenario where the background processes should exit on their own
-     ;;
+    if [[ -e /proc/$DOCKER_PID ]]; then
+      shutdown_docker
+    else
+      log ERROR "Docker engine unexpectly ended."
+      shutdown_act
+    fi
+    exit 1 # there is no scenario where the background processes should exit on their own
+    ;;
 
   *)
     exec act_runner daemon --config "$effective_config_file"

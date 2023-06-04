@@ -12,27 +12,6 @@ log INFO "Effective user: $(id)"
 cd /data
 
 
-#################################################################
-# ensure act user has read/write access to /var/run/docker.sock
-#################################################################
-if [[ $DOCKER_MODE != "dind-rootless" ]]; then
-  if [[ ! -w /var/run/docker.sock || ! -r /var/run/docker.sock ]]; then
-    docker_group=$(stat -c '%G' /var/run/docker.sock)
-    if [[ $docker_group == "UNKNOWN" ]]; then
-      docker_gid=$(stat -c '%g' /var/run/docker.sock)
-      docker_group="docker$docker_gid"
-      log INFO "Creating group [$docker_group]..."
-      sudo addgroup --gid $docker_gid $docker_group
-    fi
-
-    if ! id -nG act | grep -qw "$docker_group"; then
-      log INFO "Adding user [act] to docker group [$(getent group $docker_group)]..."
-      sudo usermod -aG $docker_group act
-    fi
-  fi
-fi
-
-
 #################################################
 # load custom init script if specified
 #################################################

@@ -80,18 +80,36 @@ fi
 #################################################################
 # check if act user UID/GID needs adjustment
 #################################################################
-fixids=false
+fix_permissions=false
 if [ -n "${GITEA_RUNNER_UID:-}" ]; then
   effective_uid=$(id -u act)
   if [ "$GITEA_RUNNER_UID" != "$effective_uid" ]; then
-    fixids=true
+    fix_permissions=true
   fi
 fi
 
 if [ -n "${GITEA_RUNNER_GID:-}" ]; then
   effective_gid=$(id -g act)
   if [ "$GITEA_RUNNER_GID" != "$effective_gid" ]; then
-    fixids=true
+    fix_permissions=true
+  fi
+fi
+
+#################################################################
+# check if act user has read/write access to /var/run/docker.sock
+#################################################################
+if [[ $DOCKER_MODE != "dind-rootless" ]]; then
+  if [[ ! -w /var/run/docker.sock || ! -r /var/run/docker.sock ]]; then
+    docker_group=$(stat -c '%G' /var/run/docker.sock)
+    if [[ $docker_group == "UNKNOWN" ]]; then
+      docker_gid=$(stat -c '%g' /var/run/docker.sock)
+      docker_group="docker$docker_gid"
+      fix_permissions=true
+    fi
+
+    if ! id -nG act | grep -qw "$docker_group"; then
+      fix_permissions=true
+    fi
   fi
 fi
 
@@ -99,8 +117,9 @@ fi
 #################################################################
 # adjust act user UID/GID if required
 #################################################################
-if [[ $fixids == "true" ]]; then
-  exec sudo -E bash /opt/run_fixids.sh
+if [[ $fix_permissions == "true" ]]; then
+  log INFO "Fixing permissions..."
+  exec sudo -E bash /opt/fix_permissions.sh
 else
   exec bash /opt/run_runner.sh
 fi

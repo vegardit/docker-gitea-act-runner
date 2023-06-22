@@ -29,6 +29,7 @@ ARG BASE_LAYER_CACHE_KEY
 
 # dood|dind|dind-rootless
 ARG FLAVOR
+ARG GITEA_ACT_RUNNER_VERSION
 
 RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
 
@@ -36,14 +37,18 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   /mnt/shared/cmd/debian-install-support-tools.sh
 
   function minimize() {
-     ls -l "$@"
-     echo "Stripping [$*]..."
-     command strip --strip-unneeded "$@"
-     ls -l "$@"
-     if [[ $UPX_COMPRESS == "true" ]]; then
-       echo "Compressing [$*]..."
-       /opt/upx/upx -9 "$@" || true
-     fi
+    ls -l "$@"
+    echo "Stripping [$*]..."
+    command strip --strip-unneeded "$@"
+    ls -l "$@"
+    if [[ $UPX_COMPRESS == "true" ]]; then
+      echo "Compressing [$*]..."
+      /opt/upx/upx -9 "$@" || true
+    fi
+  }
+
+  function curl() {
+    command curl -sSfL --connect-timeout 10 --max-time 30 --retry 3 --retry-all-errors "$@"
   }
 
   echo "#################################################"
@@ -57,9 +62,9 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     echo "#################################################"
     apt-get install --no-install-recommends -y xz-utils
     mkdir /opt/upx
-    upx_download_url=$(curl -fsSL "https://api.github.com/repos/upx/upx/releases/latest" | grep browser_download_url | grep amd64_linux.tar.xz | cut "-d\"" -f4)
+    upx_download_url=$(curl "https://api.github.com/repos/upx/upx/releases/latest" | grep browser_download_url | grep amd64_linux.tar.xz | cut "-d\"" -f4)
     echo "Downloading [$upx_download_url]..."
-    curl -fsSL "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
+    curl "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
     /opt/upx/upx --version
   fi
 
@@ -74,9 +79,9 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     amd64|arm64) ;;
     *) echo "Unsupported arch: $arch"; exit 1;;
   esac
-  act_runner_download_url=$(curl -fsSL "https://gitea.com/gitea/act_runner/releases" | grep -oP "https://gitea.com/gitea/act_runner/releases/download/.*-linux-${arch}" | head -1)
+  act_runner_download_url=https://gitea.com/gitea/act_runner/releases/download/v${GITEA_ACT_RUNNER_VERSION}/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${arch}
   echo "Downloading [$act_runner_download_url]..."
-  curl -fsSL "$act_runner_download_url" -o /usr/local/bin/act_runner
+  curl "$act_runner_download_url" -o /usr/local/bin/act_runner
   chmod 755 /usr/local/bin/act_runner
   minimize /usr/local/bin/act_runner
   act_runner --version
@@ -97,7 +102,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     # https://docs.docker.com/engine/install/debian/#install-using-the-repository
     apt-get install --no-install-recommends -y gnupg
     install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL "https://download.docker.com/linux/debian/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    curl "https://download.docker.com/linux/debian/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     chmod a+r /etc/apt/keyrings/docker.gpg
     echo \
       "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
@@ -121,7 +126,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     echo 'dockremap:165536:65536' | tee -a /etc/subuid
     echo 'dockremap:165536:65536' | tee -a /etc/subgid
 
-    curl -sSfL "https://raw.githubusercontent.com/moby/moby/v24.0.2/hack/dind" -o /usr/local/bin/dind-hack
+    curl "https://raw.githubusercontent.com/moby/moby/v24.0.2/hack/dind" -o /usr/local/bin/dind-hack
     chmod +x /usr/local/bin/dind-hack
 
     if [[ $FLAVOR == dind-rootless ]]; then

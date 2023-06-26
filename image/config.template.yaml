@@ -1,5 +1,6 @@
 log:
-  level: ${GITEA_RUNNER_LOG_LEVEL:-info} # The level of logging, can be trace, debug, info, warn, error, fatal
+  # The level of logging, can be trace, debug, info, warn, error, fatal
+  level: ${GITEA_RUNNER_LOG_LEVEL:-info}
 
 runner:
   # Where to store the registration result.
@@ -30,6 +31,11 @@ runner:
   fetch_timeout: '${GITEA_RUNNER_FETCH_TIMEOUT:-5s}'
   # The interval for fetching the job from the Gitea instance.
   fetch_interval: '${GITEA_RUNNER_FETCH_INTERVAL:-2s}'
+  # The labels of a runner are used to determine which jobs the runner can run, and how to run them.
+  # Like: ["macos-arm64:host", "ubuntu-latest:docker://node:16-bullseye", "ubuntu-22.04:docker://node:16-bullseye"]
+  # If it's empty when registering, it will ask for inputting labels.
+  # If it's empty when execute `deamon`, will use labels in `.runner` file.
+  #labels: []
 
 cache:
   # Enable cache server to use actions/cache.
@@ -46,9 +52,14 @@ cache:
   port: ${ACT_CACHE_SERVER_PORT:-0}
 
 container:
-  # Which network to use for the job containers. Could be bridge, host, none, or the name of a custom network.
-  network_mode: ${GITEA_RUNNER_JOB_CONTAINER_NETWORK:-bridge}
+  # Specifies the network to which the container will connect.
+  # Could be host, bridge or the name of a custom network.
+  # If it's empty, act_runner will create a network automatically.
+  network: ${GITEA_RUNNER_JOB_CONTAINER_NETWORK:-bridge}
   # Whether to use privileged mode or not when launching task containers (privileged mode is required for Docker-in-Docker).
   privileged: ${GITEA_RUNNER_JOB_CONTAINER_PRIVILEGED:-false}
-  # Additional container launch options (eg, --add-host=my.gitea.url:host-gateway)
+  # And other options to be used when the container is started (eg, --add-host=my.gitea.url:host-gateway).
   options: ${GITEA_RUNNER_JOB_CONTAINER_OPTIONS:-}
+  # The parent directory of a job's working directory.
+  # If it's empty, /workspace will be used.
+  #workdir_parent:

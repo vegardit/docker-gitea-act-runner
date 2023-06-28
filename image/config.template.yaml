@@ -1,3 +1,5 @@
+# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.0/internal/pkg/config/config.example.yaml
+
 log:
   # The level of logging, can be trace, debug, info, warn, error, fatal
   level: ${GITEA_RUNNER_LOG_LEVEL:-info}
@@ -62,4 +64,4 @@ container:
   options: ${GITEA_RUNNER_JOB_CONTAINER_OPTIONS:-}
   # The parent directory of a job's working directory.
   # If it's empty, /workspace will be used.
-  #workdir_parent:
+  workdir_parent: ${GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT:-/workspace}

@@ -1,4 +1,4 @@
-# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.0/internal/pkg/config/config.example.yaml
+# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.1/internal/pkg/config/config.example.yaml
 
 log:
   # The level of logging, can be trace, debug, info, warn, error, fatal
@@ -65,3 +65,13 @@ container:
   # The parent directory of a job's working directory.
   # If it's empty, /workspace will be used.
   workdir_parent: ${GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT:-/workspace}
+  # overrides the docker client host with the specified one.
+  # If it's empty, act_runner will find an available docker host automatically.
+  # If it's "-", act_runner will find an available docker host automatically, but the docker host won't be mounted to the job containers and service containers.
+  # If it's not empty or "-", the specified docker host will be used. An error will be returned if it doesn't work.
+  docker_host: ${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST:-}
+
+host:
+  # The parent directory of a job's working directory.
+  # If it's empty, $HOME/.cache/act/ will be used.
+  workdir_parent: ${GITEA_RUNNER_HOST_WORKDIR_PARENT:-}

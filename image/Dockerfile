@@ -214,7 +214,7 @@ RUN <<EOF
   echo "#################################################"
   echo "Writing build_info..."
   echo "#################################################"
-  echo -e "
+  echo "
 GIT_REPO:    $GIT_REPO_URL
 GIT_BRANCH:  $GIT_BRANCH
 GIT_COMMIT:  $GIT_COMMIT_HASH @ $GIT_COMMIT_DATE

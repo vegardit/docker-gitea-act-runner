@@ -95,6 +95,7 @@ if [ -n "${GITEA_RUNNER_GID:-}" ]; then
   fi
 fi
 
+
 #################################################################
 # check if act user has read/write access to /var/run/docker.sock
 #################################################################

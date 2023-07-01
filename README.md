@@ -128,6 +128,7 @@ Name|Default Value|Description
 GITEA_RUNNER_CONFIG_TEMPLATE_FILE|`/opt/config.template.yaml`|Template to derive the effective config file from, see [image/config.template.yaml](image/config.template.yaml)
 GITEA_RUNNER_UID|`1000`|The UID of the Gitea runner process
 GITEA_RUNNER_GID|`1000`|The GID of the Gitea runner process
+GITEA_RUNNER_LOG_EFFECTIVE_CONFIG|`false`|If set to true logs the effective YAML configuration to stdout during startup.
 GITEA_RUNNER_LOG_LEVEL|`info`|The level of logging, can be trace, debug, info, warn, error, fatal
 GITEA_RUNNER_ENV_FILE|`/data/.env`|Extra environment variables to run jobs from a file
 GITEA_RUNNER_FETCH_TIMEOUT|`5s`|The timeout for fetching the job from the Gitea instance

@@ -35,24 +35,26 @@ export XDG_CACHE_HOME=/tmp/.cache
 #################################################
 # render config file
 #################################################
-effective_config_file=/tmp/gitea_act_runner_config.yml
-rm -f "$effective_config_file"
-if [[ ${GITEA_RUNNER_LOG_EFFECTIVE_CONFIG:-false} == "true" ]]; then
-  log INFO "Effective runner config [$effective_config_file]:"
-  echo "==========================================================="
-  while IFS= read -r line; do
-    line=${line//\"/\\\"} # escape double quotes
-    line=${line//\`/\\\`} # escape backticks
-    eval "echo \"$line\"" | tee -a "$effective_config_file"
-  done < $GITEA_RUNNER_CONFIG_TEMPLATE_FILE
-  echo "==========================================================="
-else
-  while IFS= read -r line; do
-    line=${line//\"/\\\"} # escape double quotes
-    eval "echo \"$line\"" >> "$effective_config_file"
-  done < $GITEA_RUNNER_CONFIG_TEMPLATE_FILE
+# only render template of no custom config file was given
+if [[ -z ${EFFECTIVE_CONFIG_FILE} ]]; then
+  EFFECTIVE_CONFIG_FILE=/tmp/gitea_act_runner_config.yml
+  rm -f "$EFFECTIVE_CONFIG_FILE"
+  if [[ ${GITEA_RUNNER_LOG_EFFECTIVE_CONFIG:-false} == "true" ]]; then
+    log INFO "Effective runner config [$EFFECTIVE_CONFIG_FILE]:"
+    echo "==========================================================="
+    while IFS= read -r line; do
+      line=${line//\"/\\\"} # escape double quotes
+      line=${line//\`/\\\`} # escape backticks
+      eval "echo \"$line\"" | tee -a "$EFFECTIVE_CONFIG_FILE"
+    done < $GITEA_RUNNER_CONFIG_TEMPLATE_FILE
+    echo "==========================================================="
+  else
+    while IFS= read -r line; do
+      line=${line//\"/\\\"} # escape double quotes
+      eval "echo \"$line\"" >> "$EFFECTIVE_CONFIG_FILE"
+    done < $GITEA_RUNNER_CONFIG_TEMPLATE_FILE
+  fi
 fi
-
 
 #################################################
 # register act runner if required
@@ -77,7 +79,7 @@ if [[ ! -s .runner ]]; then
       --token    "$GITEA_RUNNER_REGISTRATION_TOKEN" \
       --name     "$GITEA_RUNNER_NAME" \
       --labels   "$GITEA_RUNNER_LABELS" \
-      --config "$effective_config_file" \
+      --config "$EFFECTIVE_CONFIG_FILE" \
       --no-interactive; then
       break;
     fi
@@ -101,7 +103,7 @@ unset $(env | grep "^GITEA_" | cut -d= -f1)
 #################################################
 case $DOCKER_MODE in
   dind*)
-    act_runner daemon --config "$effective_config_file" &
+    act_runner daemon --config "$EFFECTIVE_CONFIG_FILE" &
     act_runner_pid=$!
 
     function shutdown_act() {
@@ -139,6 +141,6 @@ case $DOCKER_MODE in
     ;;
 
   *)
-    exec act_runner daemon --config "$effective_config_file"
+    exec act_runner daemon --config "$EFFECTIVE_CONFIG_FILE"
     ;;
 esac

@@ -111,6 +111,11 @@ Example `docker-compose.yml`:
 
 The following environment variables can be specified to further configure the service.
 
+#### Runner config file:
+Name|Default Value|Description
+----|-------------|-----------
+EFFECTIVE_CONFIG_FILE|`<empty>`|Set to a custom config file if the template is not needed. ATTENTION: most environment variables will not work anymore, as they would normally be used for the config file generation.
+
 #### Runner registration:
 Name|Default Value|Description
 ----|-------------|-----------

@@ -67,7 +67,7 @@ container:
   workdir_parent: ${GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT:-/workspace}
   # Volumes (including bind mounts) can be mounted to containers. Glob syntax is supported, see https://github.com/gobwas/glob
   # You can specify multiple volumes. If the sequence is empty, no volumes can be mounted.
-  # For example, if you only allow containers to mount the `data` volume and all the json files in `/src`, you should change the config to:
+  # For example, if you only allow containers to mount the "data" volume and all the json files in "/src", you should change the config to:
   # valid_volumes:
   #   - data
   #   - /src/*.json

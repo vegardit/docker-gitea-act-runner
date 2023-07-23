@@ -33,7 +33,7 @@ fi
 #################################################################
 # start docker deamon (if installed = DinD)
 #################################################################
-if [[ -f /etc/init.d/docker-rootless ]]; then
+if [[ -f /usr/bin/dockerd-rootless.sh ]]; then
   export DOCKER_MODE=dind-rootless
   log INFO "Starting Docker engine (rootless)..."
   export DOCKER_HOST=unix://$HOME/.docker/run/docker.sock
@@ -74,6 +74,10 @@ elif [[ -f /usr/bin/dockerd ]]; then
   echo "==========================================================="
 else
   export DOCKER_MODE=dood
+fi
+
+if [[ -z ${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST:-} ]]; then
+  export GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST=${DOCKER_HOST:-unix:///var/run/docker.sock}
 fi
 
 

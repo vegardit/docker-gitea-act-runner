@@ -65,6 +65,25 @@ container:
   # The parent directory of a job's working directory.
   # If it's empty, /workspace will be used.
   workdir_parent: ${GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT:-/workspace}
+  # Volumes (including bind mounts) can be mounted to containers. Glob syntax is supported, see https://github.com/gobwas/glob
+  # You can specify multiple volumes. If the sequence is empty, no volumes can be mounted.
+  # For example, if you only allow containers to mount the `data` volume and all the json files in `/src`, you should change the config to:
+  # valid_volumes:
+  #   - data
+  #   - /src/*.json
+  # If you want to allow any volume, please use the following configuration:
+  # valid_volumes:
+  #   - '**'
+  valid_volumes:
+    - '${GITEA_RUNNER_VALID_VOLUME_1:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_1
+    - '${GITEA_RUNNER_VALID_VOLUME_2:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_2
+    - '${GITEA_RUNNER_VALID_VOLUME_3:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_3
+    - '${GITEA_RUNNER_VALID_VOLUME_4:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_4
+    - '${GITEA_RUNNER_VALID_VOLUME_5:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_5
+    - '${GITEA_RUNNER_VALID_VOLUME_6:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_6
+    - '${GITEA_RUNNER_VALID_VOLUME_7:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_7
+    - '${GITEA_RUNNER_VALID_VOLUME_8:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_8
+    - '${GITEA_RUNNER_VALID_VOLUME_9:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_9
   # overrides the docker client host with the specified one.
   # If it's empty, act_runner will find an available docker host automatically.
   # If it's "-", act_runner will find an available docker host automatically, but the docker host won't be mounted to the job containers and service containers.

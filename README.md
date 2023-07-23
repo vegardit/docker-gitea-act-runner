@@ -129,6 +129,13 @@ GITEA_RUNNER_CONFIG_TEMPLATE_FILE|`/opt/config.template.yaml`|Template to derive
 GITEA_RUNNER_UID|`1000`|The UID of the Gitea runner process
 GITEA_RUNNER_GID|`1000`|The GID of the Gitea runner process
 GITEA_RUNNER_LOG_EFFECTIVE_CONFIG|`false`|If set to true logs the effective YAML configuration to stdout during startup.
+
+#### Runner config template variables
+
+The following environment variables are referenced in the `/opt/config.template.yaml` file.
+
+Name|Default Value|Description
+----|-------------|-----------
 GITEA_RUNNER_LOG_LEVEL|`info`|The level of logging, can be trace, debug, info, warn, error, fatal
 GITEA_RUNNER_ENV_FILE|`/data/.env`|Extra environment variables to run jobs from a file
 GITEA_RUNNER_FETCH_TIMEOUT|`5s`|The timeout for fetching the job from the Gitea instance
@@ -137,11 +144,12 @@ GITEA_RUNNER_MAX_PARALLEL_JOBS|`1`|Maximum number of concurrently executed jobs
 GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST|`<empty>`|If empty, the available docker host is located automatically. If set to `-`, the available docker host is located automatically, but the docker host won't be mounted to the job containers. If it's any other value, the specified docker host will be used.
 GITEA_RUNNER_JOB_CONTAINER_NETWORK|`bridge`|Docker network to use with job containers. Can be `bridge`, `host`, `none`, or the name of a custom network
 GITEA_RUNNER_JOB_CONTAINER_PRIVILEGED|`false`|Whether to run jobs in containers with privileged mode which is required for **Docker-in-Docker** aka **dind**
-GITEA_RUNNER_JOB_CONTAINER_OPTIONS|`none`|Additional container launch options (eg, --add-host=my.gitea.url:host-gateway)
+GITEA_RUNNER_JOB_CONTAINER_OPTIONS|`<empty>`|Additional container launch options (eg, --add-host=my.gitea.url:host-gateway)
 GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT|`/workspace`|The parent directory of a job's working directory.
 GITEA_RUNNER_JOB_TIMEOUT|`3h`|The maximum time a job can run before it is cancelled
-GITEA_RUNNER_ENV_VAR_**N**_NAME|`none`|Name of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_NAME=MY_AUTH_TOKEN`
+GITEA_RUNNER_ENV_VAR_**N**_NAME|`<empty>`|Name of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_NAME=MY_AUTH_TOKEN`
 GITEA_RUNNER_ENV_VAR_**N**_VALUE|`<empty>`|Value of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_VALUE=SGVsbG8gbXkgZnJpZW5kIQ==`
+GITEA_RUNNER_VALID_VOLUME_**N**|`<empty>`|Volumes (including bind mounts) that are allowed to be mounted into job containers. [Glob syntax](https://github.com/gobwas/glob) is supported, e.g. `GITEA_RUNNER_VALID_VOLUME_1=/src/*.json`
 GITEA_RUNNER_ACTION_CACHE_DIR|`/data/cache/actions`|Path to cache cloned actions
 
 #### Embedded cache server:

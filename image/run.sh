@@ -23,7 +23,8 @@ EOF
   cat /opt/build_info
   echo
 
-  log INFO "Timezone is $(date +"%Z %z")"
+  log INFO $(act_runner --version)
+  log INFO "Timezone: $(date +"%Z %z")"
   log INFO "Hostname: $(hostname -f)"
   log INFO "IP Addresses: "
   awk '/32 host/ { if(uniq[ip]++ && ip != "127.0.0.1") print " - " ip } {ip=$2}' /proc/net/fib_trie

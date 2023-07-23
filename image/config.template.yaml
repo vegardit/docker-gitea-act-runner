@@ -1,4 +1,4 @@
-# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.1/internal/pkg/config/config.example.yaml
+# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.3/internal/pkg/config/config.example.yaml
 
 log:
   # The level of logging, can be trace, debug, info, warn, error, fatal
@@ -11,15 +11,15 @@ runner:
   capacity: ${GITEA_RUNNER_MAX_PARALLEL_JOBS:-1}
   # Extra environment variables to run jobs.
   envs:
-    ${GITEA_RUNNER_ENV_VAR_1_NAME:-GITEA_RUNNER_ENV_VAR_1}: '${GITEA_RUNNER_ENV_VAR_1_VALUE:-}'
-    ${GITEA_RUNNER_ENV_VAR_2_NAME:-GITEA_RUNNER_ENV_VAR_2}: '${GITEA_RUNNER_ENV_VAR_2_VALUE:-}'
-    ${GITEA_RUNNER_ENV_VAR_3_NAME:-GITEA_RUNNER_ENV_VAR_3}: '${GITEA_RUNNER_ENV_VAR_3_VALUE:-}'
-    ${GITEA_RUNNER_ENV_VAR_4_NAME:-GITEA_RUNNER_ENV_VAR_4}: '${GITEA_RUNNER_ENV_VAR_4_VALUE:-}'
-    ${GITEA_RUNNER_ENV_VAR_5_NAME:-GITEA_RUNNER_ENV_VAR_5}: '${GITEA_RUNNER_ENV_VAR_5_VALUE:-}'
-    ${GITEA_RUNNER_ENV_VAR_6_NAME:-GITEA_RUNNER_ENV_VAR_6}: '${GITEA_RUNNER_ENV_VAR_6_VALUE:-}'
-    ${GITEA_RUNNER_ENV_VAR_7_NAME:-GITEA_RUNNER_ENV_VAR_7}: '${GITEA_RUNNER_ENV_VAR_7_VALUE:-}'
-    ${GITEA_RUNNER_ENV_VAR_8_NAME:-GITEA_RUNNER_ENV_VAR_8}: '${GITEA_RUNNER_ENV_VAR_8_VALUE:-}'
-    ${GITEA_RUNNER_ENV_VAR_9_NAME:-GITEA_RUNNER_ENV_VAR_9}: '${GITEA_RUNNER_ENV_VAR_9_VALUE:-}'
+    ${GITEA_RUNNER_ENV_VAR_1_NAME:-GITEA_RUNNER_ENV_VAR_1}: '${GITEA_RUNNER_ENV_VAR_1_VALUE:-}' # GITEA_RUNNER_ENV_VAR_1
+    ${GITEA_RUNNER_ENV_VAR_2_NAME:-GITEA_RUNNER_ENV_VAR_2}: '${GITEA_RUNNER_ENV_VAR_2_VALUE:-}' # GITEA_RUNNER_ENV_VAR_2
+    ${GITEA_RUNNER_ENV_VAR_3_NAME:-GITEA_RUNNER_ENV_VAR_3}: '${GITEA_RUNNER_ENV_VAR_3_VALUE:-}' # GITEA_RUNNER_ENV_VAR_3
+    ${GITEA_RUNNER_ENV_VAR_4_NAME:-GITEA_RUNNER_ENV_VAR_4}: '${GITEA_RUNNER_ENV_VAR_4_VALUE:-}' # GITEA_RUNNER_ENV_VAR_4
+    ${GITEA_RUNNER_ENV_VAR_5_NAME:-GITEA_RUNNER_ENV_VAR_5}: '${GITEA_RUNNER_ENV_VAR_5_VALUE:-}' # GITEA_RUNNER_ENV_VAR_5
+    ${GITEA_RUNNER_ENV_VAR_6_NAME:-GITEA_RUNNER_ENV_VAR_6}: '${GITEA_RUNNER_ENV_VAR_6_VALUE:-}' # GITEA_RUNNER_ENV_VAR_6
+    ${GITEA_RUNNER_ENV_VAR_7_NAME:-GITEA_RUNNER_ENV_VAR_7}: '${GITEA_RUNNER_ENV_VAR_7_VALUE:-}' # GITEA_RUNNER_ENV_VAR_7
+    ${GITEA_RUNNER_ENV_VAR_8_NAME:-GITEA_RUNNER_ENV_VAR_8}: '${GITEA_RUNNER_ENV_VAR_8_VALUE:-}' # GITEA_RUNNER_ENV_VAR_8
+    ${GITEA_RUNNER_ENV_VAR_9_NAME:-GITEA_RUNNER_ENV_VAR_9}: '${GITEA_RUNNER_ENV_VAR_9_VALUE:-}' # GITEA_RUNNER_ENV_VAR_9
   # Extra environment variables to run jobs from a file.
   # It will be ignored if it's empty or the file doesn't exist.
   env_file: '${GITEA_RUNNER_ENV_FILE:-/data/.env}'
@@ -36,7 +36,7 @@ runner:
   # The labels of a runner are used to determine which jobs the runner can run, and how to run them.
   # Like: ["macos-arm64:host", "ubuntu-latest:docker://node:16-bullseye", "ubuntu-22.04:docker://node:16-bullseye"]
   # If it's empty when registering, it will ask for inputting labels.
-  # If it's empty when execute "daemon", will use labels in ".runner" file.
+  # If it's empty when execute `deamon`, will use labels in `.runner` file.
   #labels: []
 
 cache:
@@ -57,11 +57,11 @@ container:
   # Specifies the network to which the container will connect.
   # Could be host, bridge or the name of a custom network.
   # If it's empty, act_runner will create a network automatically.
-  network: ${GITEA_RUNNER_JOB_CONTAINER_NETWORK:-bridge}
+  network: '${GITEA_RUNNER_JOB_CONTAINER_NETWORK:-bridge}'
   # Whether to use privileged mode or not when launching task containers (privileged mode is required for Docker-in-Docker).
   privileged: ${GITEA_RUNNER_JOB_CONTAINER_PRIVILEGED:-false}
   # And other options to be used when the container is started (eg, --add-host=my.gitea.url:host-gateway).
-  options: ${GITEA_RUNNER_JOB_CONTAINER_OPTIONS:-}
+  options: '${GITEA_RUNNER_JOB_CONTAINER_OPTIONS:-}'
   # The parent directory of a job's working directory.
   # If it's empty, /workspace will be used.
   workdir_parent: ${GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT:-/workspace}
@@ -88,9 +88,9 @@ container:
   # If it's empty, act_runner will find an available docker host automatically.
   # If it's "-", act_runner will find an available docker host automatically, but the docker host won't be mounted to the job containers and service containers.
   # If it's not empty or "-", the specified docker host will be used. An error will be returned if it doesn't work.
-  docker_host: ${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST:-}
+  docker_host: '${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST:-}'
 
 host:
   # The parent directory of a job's working directory.
   # If it's empty, $HOME/.cache/act/ will be used.
-  workdir_parent: ${GITEA_RUNNER_HOST_WORKDIR_PARENT:-}
+  workdir_parent: '${GITEA_RUNNER_HOST_WORKDIR_PARENT:-}'

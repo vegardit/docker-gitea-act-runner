@@ -49,6 +49,7 @@ if [[ ${GITEA_RUNNER_LOG_EFFECTIVE_CONFIG:-false} == "true" ]]; then
 else
   while IFS= read -r line; do
     line=${line//\"/\\\"} # escape double quotes
+    line=${line//\`/\\\`} # escape backticks
     eval "echo \"$line\"" >> "$effective_config_file"
   done < $GITEA_RUNNER_CONFIG_TEMPLATE_FILE
 fi

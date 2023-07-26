@@ -28,6 +28,8 @@ EOF
   log INFO "Hostname: $(hostname -f)"
   log INFO "IP Addresses: "
   awk '/32 host/ { if(uniq[ip]++ && ip != "127.0.0.1") print " - " ip } {ip=$2}' /proc/net/fib_trie
+  log INFO "Config environment variables: "
+  env | grep '^GITEA_\|^ACT_' | sort | sed 's/TOKEN=.*/TOKEN=******/g' | sed -e 's/^/ - /'
 fi
 
 

@@ -155,11 +155,11 @@ GITEA_RUNNER_ACTION_CACHE_DIR|`/data/cache/actions`|Path to cache cloned actions
 #### Embedded cache server:
 Name|Default Value|Description
 ----|-------------|-----------
-ACT_CACHE_SERVER_ENABLED|`true`| Enable the embedded cache service to use `actions/cache` in jobs
+ACT_CACHE_SERVER_ENABLED|`true`| Enable the use of an embedded or external cache server with `actions/cache` in jobs
+ACT_CACHE_SERVER_EXTERNAL_URL|`<empty>`|URL to an external cache server. If specified, act_runner will use this URL as the ACTIONS_CACHE_URL instead of starting an embedded server. The URL should end with "/".
 ACT_CACHE_SERVER_DIR|`/data/cache/server`| The directory to store the cache data
 ACT_CACHE_SERVER_HOST|`<empty>`| The IP address or hostname via which the job containers can reach the cache server. Leave empty for automatic detection
 ACT_CACHE_SERVER_PORT|`0`|The TCP port of the cache server. `0` means to use a random, available port
-
 
 ## <a name="license"></a>License
 

@@ -1,4 +1,4 @@
-# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.3/internal/pkg/config/config.example.yaml
+# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.4/internal/pkg/config/config.example.yaml
 
 log:
   # The level of logging, can be trace, debug, info, warn, error, fatal
@@ -52,6 +52,10 @@ cache:
   # The port of the cache server.
   # 0 means to use a random available port.
   port: ${ACT_CACHE_SERVER_PORT:-0}
+  # The external cache server URL. Valid only when enable is true.
+  # If it's specified, act_runner will use this URL as the ACTIONS_CACHE_URL rather than start a server by itself.
+  # The URL should generally end with "/".
+  external_server: ${ACT_CACHE_SERVER_EXTERNAL_URL:-}
 
 container:
   # Specifies the network to which the container will connect.

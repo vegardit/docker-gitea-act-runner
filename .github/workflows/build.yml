@@ -55,7 +55,7 @@ jobs:
       run: env | sort
 
     - name: Git Checkout
-      uses: actions/checkout@v3 #https://github.com/actions/checkout
+      uses: actions/checkout@v4 #https://github.com/actions/checkout
 
     - name: Check Dockerfile
       uses: hadolint/hadolint-action@v3.1.0

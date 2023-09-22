@@ -16,7 +16,16 @@ if [ -n "${GITEA_RUNNER_UID:-}" ]; then
   effective_uid=$(id -u $act_user)
   if [ "$GITEA_RUNNER_UID" != "$effective_uid" ]; then
     log INFO "Changing UID of user [$act_user] from $effective_uid to $GITEA_RUNNER_UID..."
-    usermod -o -u "$GITEA_RUNNER_UID" $act_user
+
+    # workaround for:
+    #    usermod -o -u "$GITEA_RUNNER_UID" $act_user
+    # failing with "usermod: user act is currently used by process 1" because of /usr/bin/tini process
+    effective_gid=$(id -g $act_user)
+    sed -i "s/^$act_user:x:$effective_uid:$effective_gid/$act_user:x:$GITEA_RUNNER_UID:$effective_gid/" /etc/passwd
+
+    act_home=$(eval echo "~$act_user")
+    chown $GITEA_RUNNER_UID "$act_home"
+    find "$act_home" -user $effective_uid -exec chown $GITEA_RUNNER_UID {} \;
   fi
 fi
 
@@ -25,6 +34,10 @@ if [ -n "${GITEA_RUNNER_GID:-}" ]; then
   if [ "$GITEA_RUNNER_GID" != "$effective_gid" ]; then
     log INFO "Changing GID of user [$act_user] from $effective_gid to $GITEA_RUNNER_GID..."
     groupmod -o -g "$GITEA_RUNNER_GID" $act_user
+
+    act_home=$(eval echo "~$act_user")
+    chown :$GITEA_RUNNER_GID "$act_home"
+    find "$act_home" -group $effective_gid -exec chgrp $GITEA_RUNNER_GID {} \;
   fi
 fi
 

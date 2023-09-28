@@ -146,6 +146,7 @@ GITEA_RUNNER_JOB_CONTAINER_NETWORK|`bridge`|Docker network to use with job conta
 GITEA_RUNNER_JOB_CONTAINER_PRIVILEGED|`false`|Whether to run jobs in containers with privileged mode which is required for **Docker-in-Docker** aka **dind**
 GITEA_RUNNER_JOB_CONTAINER_OPTIONS|`<empty>`|Additional container launch options (eg, --add-host=my.gitea.url:host-gateway)
 GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT|`/workspace`|The parent directory of a job's working directory.
+GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL|`false`|Pull docker images even if already present
 GITEA_RUNNER_JOB_TIMEOUT|`3h`|The maximum time a job can run before it is cancelled
 GITEA_RUNNER_ENV_VAR_**N**_NAME|`<empty>`|Name of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_NAME=MY_AUTH_TOKEN`
 GITEA_RUNNER_ENV_VAR_**N**_VALUE|`<empty>`|Value of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_VALUE=SGVsbG8gbXkgZnJpZW5kIQ==`

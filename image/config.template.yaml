@@ -1,4 +1,4 @@
-# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.4/internal/pkg/config/config.example.yaml
+# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.6/internal/pkg/config/config.example.yaml
 
 log:
   # The level of logging, can be trace, debug, info, warn, error, fatal
@@ -55,7 +55,7 @@ cache:
   # The external cache server URL. Valid only when enable is true.
   # If it's specified, act_runner will use this URL as the ACTIONS_CACHE_URL rather than start a server by itself.
   # The URL should generally end with "/".
-  external_server: ${ACT_CACHE_SERVER_EXTERNAL_URL:-}
+  external_server: '${ACT_CACHE_SERVER_EXTERNAL_URL:-}'
 
 container:
   # Specifies the network to which the container will connect.
@@ -93,6 +93,7 @@ container:
   # If it's "-", act_runner will find an available docker host automatically, but the docker host won't be mounted to the job containers and service containers.
   # If it's not empty or "-", the specified docker host will be used. An error will be returned if it doesn't work.
   docker_host: '${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST:-}'
+  force_pull: '${GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL:-false}'
 
 host:
   # The parent directory of a job's working directory.

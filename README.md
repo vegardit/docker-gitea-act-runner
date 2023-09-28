@@ -35,32 +35,32 @@ The docker image comes in three flavors:
 Running from the command line:
 
 - Docker-out-of-Docker approach
-   ```sh
+   ```py
      docker run \
        -e GITEA_INSTANCE_URL=https://gitea.example.com \
        -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
-       -v /var/run/docker.sock:/var/run/docker.sock:rw \
        --name gitea_act_runner \
+       -v /var/run/docker.sock:/var/run/docker.sock:rw \
        vegardit/gitea-act-runner:latest
    ```
 
 - Docker-in-Docker approach
-   ```sh
+   ```py
      docker run \
        -e GITEA_INSTANCE_URL=https://gitea.example.com \
        -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
-       --privileged
        --name gitea_act_runner \
+       --privileged
        vegardit/gitea-act-runner:dind-latest
    ```
 
 - Docker-in-Docker approach with Docker daemon running as a non-root user (Rootless mode)
-   ```sh
+   ```py
      docker run \
        -e GITEA_INSTANCE_URL=https://gitea.example.com \
        -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
-       --privileged
        --name gitea_act_runner \
+       --privileged
        vegardit/gitea-act-runner:dind-rootless-latest
    ```
 
@@ -77,6 +77,7 @@ Example `docker-compose.yml`:
      gitea_act_runner:
        image: vegardit/gitea-act-runner:latest
        #image: ghcr.io/vegardit/gitea-act-runner:latest
+       restart: always
        volumes:
          - /var/run/docker.sock:/var/run/docker.sock:rw
          - /my/path/to/data/dir:/data:rw # the config file is located at /data/.runner and needs to survive container restarts
@@ -96,7 +97,9 @@ Example `docker-compose.yml`:
 
      gitea_act_runner:
        image: vegardit/gitea-act-runner:dind-latest
+       #image: ghcr.io/vegarditgitea-act-runner:dind-latest
        privileged: true
+       restart: always
        volumes:
          - /my/path/to/data/dir:/data:rw # the config file is located at /data/.runner and needs to survive container restarts
        environment:

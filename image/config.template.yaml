@@ -93,7 +93,7 @@ container:
   # If it's "-", act_runner will find an available docker host automatically, but the docker host won't be mounted to the job containers and service containers.
   # If it's not empty or "-", the specified docker host will be used. An error will be returned if it doesn't work.
   docker_host: '${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST:-}'
-  force_pull: '${GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL:-false}'
+  force_pull: ${GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL:-false}
 
 host:
   # The parent directory of a job's working directory.

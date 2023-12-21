@@ -104,19 +104,22 @@ fi
 
 
 #################################################################
-# check if act user has read/write access to /var/run/docker.sock
+# check if act user has read/write access to docker socket in GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST
 #################################################################
 if [[ $DOCKER_MODE != "dind-rootless" ]]; then
-  if [[ ! -w /var/run/docker.sock || ! -r /var/run/docker.sock ]]; then
-    docker_group=$(stat -c '%G' /var/run/docker.sock)
-    if [[ $docker_group == "UNKNOWN" ]]; then
-      docker_gid=$(stat -c '%g' /var/run/docker.sock)
-      docker_group="docker$docker_gid"
-      fix_permissions=true
-    fi
+  if [[ $GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST == unix://* ]]; then
+    docker_sock=${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST#unix://}
+    if [[ ! -w $docker_sock || ! -r $docker_sock ]]; then
+      docker_group=$(stat -c '%G' $docker_sock)
+      if [[ $docker_group == "UNKNOWN" ]]; then
+        docker_gid=$(stat -c '%g' $docker_sock)
+        docker_group="docker$docker_gid"
+        fix_permissions=true
+      fi
 
-    if ! id -nG act | grep -qw "$docker_group"; then
-      fix_permissions=true
+      if ! id -nG act | grep -qw "$docker_group"; then
+        fix_permissions=true
+      fi
     fi
   fi
 fi

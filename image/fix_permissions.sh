@@ -43,22 +43,24 @@ fi
 
 
 #################################################################
-# ensure act user has read/write access to /var/run/docker.sock
+# ensure act user has read/write access to docker socket in GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST
 #################################################################
 if [[ $DOCKER_MODE != "dind-rootless" ]]; then
-  docker_sock=/var/run/docker.sock
-  if runuser -u $act_user -- [ ! -r $docker_sock ] || runuser -u $act_user -- [ ! -w $docker_sock ]; then
-    docker_group=$(stat -c '%G' $docker_sock)
-    if [[ $docker_group == "UNKNOWN" ]]; then
-      docker_gid=$(stat -c '%g' $docker_sock)
-      docker_group="docker$docker_gid"
-      log INFO "Creating group [$docker_group]..."
-      addgroup --gid $docker_gid $docker_group
-    fi
+  if [[ $GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST == unix://* ]]; then
+    docker_sock=${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST#unix://}
+    if runuser -u $act_user -- [ ! -r $docker_sock ] || runuser -u $act_user -- [ ! -w $docker_sock ]; then
+      docker_group=$(stat -c '%G' $docker_sock)
+      if [[ $docker_group == "UNKNOWN" ]]; then
+        docker_gid=$(stat -c '%g' $docker_sock)
+        docker_group="docker$docker_gid"
+        log INFO "Creating group [$docker_group]..."
+        addgroup --gid $docker_gid $docker_group
+      fi
 
-    if ! id -nG $act_user | grep -qw "$docker_group"; then
-      log INFO "Adding user [$act_user] to docker group [$(getent group $docker_group)]..."
-      usermod -aG $docker_group $act_user
+      if ! id -nG $act_user | grep -qw "$docker_group"; then
+        log INFO "Adding user [$act_user] to docker group [$(getent group $docker_group)]..."
+        usermod -aG $docker_group $act_user
+      fi
     fi
   fi
 fi

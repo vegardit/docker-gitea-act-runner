@@ -98,4 +98,4 @@ container:
 host:
   # The parent directory of a job's working directory.
   # If it's empty, $HOME/.cache/act/ will be used.
-  workdir_parent: '${GITEA_RUNNER_HOST_WORKDIR_PARENT:-}'
+  workdir_parent: '${GITEA_RUNNER_HOST_WORKDIR_PARENT:-/data/cache/actions}'

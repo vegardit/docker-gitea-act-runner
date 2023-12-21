@@ -154,7 +154,7 @@ GITEA_RUNNER_JOB_TIMEOUT|`3h`|The maximum time a job can run before it is cancel
 GITEA_RUNNER_ENV_VAR_**N**_NAME|`<empty>`|Name of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_NAME=MY_AUTH_TOKEN`
 GITEA_RUNNER_ENV_VAR_**N**_VALUE|`<empty>`|Value of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_VALUE=SGVsbG8gbXkgZnJpZW5kIQ==`
 GITEA_RUNNER_VALID_VOLUME_**N**|`<empty>`|Volumes (including bind mounts) that are allowed to be mounted into job containers. [Glob syntax](https://github.com/gobwas/glob) is supported, e.g. `GITEA_RUNNER_VALID_VOLUME_1=/src/*.json`
-GITEA_RUNNER_ACTION_CACHE_DIR|`/data/cache/actions`|Path to cache cloned actions
+GITEA_RUNNER_HOST_WORKDIR_PARENT|`/data/cache/actions`|The parent directory of a job's working directory. (Path to cache cloned actions)
 
 #### Embedded cache server:
 Name|Default Value|Description

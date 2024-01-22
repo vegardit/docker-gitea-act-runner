@@ -64,7 +64,7 @@ jobs:
         ignore: DL3008,SC1091 # https://github.com/hadolint/hadolint/wiki/DL3008
 
     - name: Cache trivy cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ env.TRIVY_CACHE_DIR }}
         # https://github.com/actions/cache/issues/342#issuecomment-673371329

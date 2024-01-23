@@ -44,10 +44,22 @@ jobs:
         include:
           - DOCKER_IMAGE_FLAVOR: dood
             DOCKER_IMAGE_TAG_PREFIX: ""
+            GITEA_ACT_RUNNER_VERSION: latest
           - DOCKER_IMAGE_FLAVOR: dind
             DOCKER_IMAGE_TAG_PREFIX: dind-
+            GITEA_ACT_RUNNER_VERSION: latest
           - DOCKER_IMAGE_FLAVOR: dind-rootless
             DOCKER_IMAGE_TAG_PREFIX: dind-rootless-
+            GITEA_ACT_RUNNER_VERSION: latest
+          - DOCKER_IMAGE_FLAVOR: dood
+            DOCKER_IMAGE_TAG_PREFIX: ""
+            GITEA_ACT_RUNNER_VERSION: nightly
+          - DOCKER_IMAGE_FLAVOR: dind
+            DOCKER_IMAGE_TAG_PREFIX: dind-
+            GITEA_ACT_RUNNER_VERSION: nightly
+          - DOCKER_IMAGE_FLAVOR: dind-rootless
+            DOCKER_IMAGE_TAG_PREFIX: dind-rootless-
+            GITEA_ACT_RUNNER_VERSION: nightly
       fail-fast: true
 
     steps:
@@ -106,6 +118,8 @@ jobs:
       run: |
         if [[ -n "${{ inputs.VERSION }}" ]]; then
            export GITEA_ACT_RUNNER_VERSION="${{ inputs.VERSION }}"
+        else:
+           export GITEA_ACT_RUNNER_VERSION="${{ matrix.GITEA_ACT_RUNNER_VERSION }}"
         fi
         bash build-image.sh
 

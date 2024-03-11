@@ -14,6 +14,7 @@ on:
     - '**'
     paths-ignore:
     - '**/*.md'
+    - '.github/workflows/stale.yml'
     - '.github/*.yml'
   schedule:
     # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows

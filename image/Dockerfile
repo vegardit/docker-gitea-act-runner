@@ -79,7 +79,11 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     amd64|arm64) ;;
     *) echo "Unsupported arch: $arch"; exit 1;;
   esac
-  act_runner_download_url=https://gitea.com/gitea/act_runner/releases/download/v${GITEA_ACT_RUNNER_VERSION}/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${arch}
+  if [[ $GITEA_ACT_RUNNER_VERSION == "nightly" ]]; then
+    act_runner_download_url=https://dl.gitea.com/act_runner/nightly/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${arch}
+  else
+    act_runner_download_url=https://gitea.com/gitea/act_runner/releases/download/v${GITEA_ACT_RUNNER_VERSION}/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${arch}
+  fi
   echo "Downloading [$act_runner_download_url]..."
   curl "$act_runner_download_url" -o /usr/local/bin/act_runner
   chmod 755 /usr/local/bin/act_runner

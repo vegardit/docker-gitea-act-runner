@@ -76,8 +76,8 @@ docker buildx build "$project_root" \
   --build-arg GIT_REPO_URL="$(git config --get remote.origin.url)" \
   --build-arg GITEA_ACT_RUNNER_VERSION="$gitea_act_runner_effective_version" \
   --build-arg FLAVOR=$DOCKER_IMAGE_FLAVOR \
-  $(if [[ "${ACT:-}" == "true" ]]; then \
-    echo -n "--output type=docker"; \
+  $(if [[ "${ACT:-}" == "true" || "${DOCKER_PUSH:-}" != "true" ]]; then \
+    echo -n "--load --output type=docker"; \
   else \
     echo -n "--platform linux/amd64,linux/arm64,linux/arm/v7"; \
   fi) \
@@ -88,16 +88,16 @@ docker buildx build "$project_root" \
 docker buildx stop
 set +x
 
+if [[ "${DOCKER_PUSH:-}" == "true" ]]; then
+  docker image pull $image_name
+fi
 
 #################################################
 # push image to ghcr.io
 #################################################
-if [[ "${DOCKER_PUSH:-}" == "true" ]]; then
-  set -x;
-  docker image pull $image_name
-  regctl image copy $image_name ghcr.io/$image_name
-  regctl image copy $image_name2 ghcr.io/$image_name2
-  set +x
+if [[ "${DOCKER_PUSH_GHCR:-}" == "true" ]]; then
+  (set -x; regctl image copy $image_name ghcr.io/$image_name)
+  (set -x; regctl image copy $image_name2 ghcr.io/$image_name2)
 fi
 
 
@@ -106,15 +106,14 @@ fi
 #################################################
 echo
 log INFO "Testing docker image [$image_name]..."
-set -x
-docker run --rm $image_name act_runner --version
-set +x
+(set -x; docker run --rm $image_name act_runner --version)
 echo
 
 
 #################################################
 # perform security audit
 #################################################
-if [[ "${DOCKER_AUDIT_IMAGE:-1}" == 1 ]]; then
+# TODO see https://gitea.com/gitea/act_runner/issues/513
+if [[ "${DOCKER_AUDIT_IMAGE:-1}" == 1 && "$GITEA_ACT_RUNNER_VERSION" == "nightly" ]]; then
   bash "$shared_lib/cmd/audit-image.sh" $image_name
 fi

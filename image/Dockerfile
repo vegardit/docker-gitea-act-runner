@@ -110,6 +110,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     apt-get update
     (set -x; apt-get install --no-install-recommends -y docker-ce containerd.io fuse-overlayfs)
     apt-get remove -y gnupg
+    apt-get autoremove -y
 
     minimize /usr/bin/containerd* /usr/bin/ctr /usr/bin/docker* /usr/bin/runc
 

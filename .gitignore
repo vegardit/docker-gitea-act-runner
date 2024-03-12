@@ -14,16 +14,16 @@ bin/
 **/.*.md.html
 
 # IntelliJ
-.idea
-*.iml
-*.ipr
-*.iws
+/.idea
+/*.iml
+/*.ipr
+/*.iws
 
 # NetBeans
 nb-configuration.xml
 
 # Visual Studio Code
-.vscode
+/.vscode
 
 # OSX
 .DS_Store

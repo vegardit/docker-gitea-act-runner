@@ -126,9 +126,6 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     echo 'dockremap:165536:65536' | tee -a /etc/subuid
     echo 'dockremap:165536:65536' | tee -a /etc/subgid
 
-    curl "https://raw.githubusercontent.com/moby/moby/v24.0.2/hack/dind" -o /usr/local/bin/dind-hack
-    chmod +x /usr/local/bin/dind-hack
-
     if [[ $FLAVOR == dind-rootless ]]; then
       # https://docs.docker.com/engine/security/rootless/
       (set -x; apt-get install --no-install-recommends -y \
@@ -146,6 +143,9 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
       mkdir /opt/containerd
       chown act:act /opt/containerd
     else
+      docker_version=$(docker --version | cut -d ' ' -f3 | cut -d ',' -f1)
+      curl "https://raw.githubusercontent.com/moby/moby/v${docker_version}/hack/dind" -o /usr/local/bin/dind-hack
+      chmod +x /usr/local/bin/dind-hack
       usermod -aG docker act
     fi
   fi

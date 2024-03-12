@@ -108,7 +108,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
       "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
       "$(source /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list
     apt-get update
-    apt-get install --no-install-recommends -y docker-ce containerd.io fuse-overlayfs
+    (set -x; apt-get install --no-install-recommends -y docker-ce containerd.io fuse-overlayfs)
     apt-get remove -y gnupg
 
     minimize /usr/bin/containerd* /usr/bin/ctr /usr/bin/docker* /usr/bin/runc
@@ -131,15 +131,16 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
 
     if [[ $FLAVOR == dind-rootless ]]; then
       # https://docs.docker.com/engine/security/rootless/
-      apt-get install --no-install-recommends -y \
+      (set -x; apt-get install --no-install-recommends -y \
         dbus-user-session \
         docker-ce-rootless-extras \
         kmod \
         iproute2 \
         slirp4netns \
-        uidmap
+        uidmap)
 
-      runuser -u act -g act -- /usr/bin/dockerd-rootless-setuptool.sh install --skip-iptables
+      (set -x; rootlesskit --version)
+      (set -x; runuser -u act -g act -- /usr/bin/dockerd-rootless-setuptool.sh install --skip-iptables)
 
       # workaround "failed to load plugin io.containerd.internal.v1.opt  error="mkdir /opt/containerd: permission denied"
       mkdir /opt/containerd

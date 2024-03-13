@@ -135,11 +135,15 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
       # https://docs.docker.com/engine/security/rootless/
       (set -x; apt-get install --no-install-recommends -y \
         dbus-user-session \
-        docker-ce-rootless-extras \
+        `# docker-ce-rootless-extras` \
         kmod \
         iproute2 \
         slirp4netns \
         uidmap)
+
+      # workaround for "[rootlesskit:parent] error: failed to start the child: fork/exec /proc/self/exe: operation not permitted"
+      # see https://github.com/rootless-containers/rootlesskit/issues/425
+      (set -x; apt-get install --no-install-recommends -y docker-ce-rootless-extras=5:25.0.3-1~debian.12~bookworm --allow-downgrades)
 
       (set -x; rootlesskit --version)
       (set -x; runuser -u act -g act -- /usr/bin/dockerd-rootless-setuptool.sh install --skip-iptables)

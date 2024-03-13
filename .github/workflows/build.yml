@@ -97,10 +97,11 @@ jobs:
     - name: "Determine if docker images shall be published"
       run: |
         # ACT -> https://nektosact.com/usage/index.html#skipping-steps
-        if [[ $GITHUB_REF_NAME == 'main' && $GITHUB_EVENT_NAME != 'pull_request' && -n $ACT ]]; then
-          echo "DOCKER_PUSH_GHCR=true" > "$GITHUB_ENV"
+        set -x
+        if [[ $GITHUB_REF_NAME == 'main' && $GITHUB_EVENT_NAME != 'pull_request' && -z "$ACT" ]]; then
+          echo "DOCKER_PUSH_GHCR=true" >> "$GITHUB_ENV"
           if [[ -n "${{ secrets.DOCKER_HUB_USERNAME }}" ]]; then
-            echo "DOCKER_PUSH=true" > "$GITHUB_ENV"
+            echo "DOCKER_PUSH=true" >> "$GITHUB_ENV"
           fi
         fi
 

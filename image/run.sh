@@ -34,7 +34,7 @@ fi
 
 
 #################################################################
-# start docker deamon (if installed = DinD)
+# start docker daemon (if installed = DinD)
 #################################################################
 if [[ -f /usr/bin/dockerd-rootless.sh ]]; then
   export DOCKER_MODE=dind-rootless

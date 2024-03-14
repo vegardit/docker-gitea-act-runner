@@ -28,7 +28,7 @@
 The docker image comes in three flavors:
 - `vegardit/gitea-act-runner:latest`: only contains the Gitea act_runner and executes workflows in containers of the docker engine running act_runner itself (DooD / Docker-out-of-Docker approach)
 - `vegardit/gitea-act-runner:dind-latest`: executes workflows using an embedded docker engine (DinD / Docker-in-Docker approach) providing better process isolation
-- `vegardit/gitea-act-runner:dind-rootless-latest`: executes workflows using an embedded docker engine (DinD / Docker-in-Docker approach) running the docker deamon as a non-root user [(Rootless mode)](https://docs.docker.com/engine/security/rootless/)
+- `vegardit/gitea-act-runner:dind-rootless-latest`: executes workflows using an embedded docker engine (DinD / Docker-in-Docker approach) running the docker daemon as a non-root user [(Rootless mode)](https://docs.docker.com/engine/security/rootless/)
 
 ### Docker Run
 

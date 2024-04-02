@@ -9,16 +9,15 @@ name: Build
 on:
   push:
     branches-ignore:  # build all branches except:
-    - 'dependabot/**'     # prevent GHA triggered twice (once for commit to the branch and once for opening/syncing the PR)
-    - 'dependencies/pdm'  # prevent GHA triggered twice (once for commit to the branch and once for opening/syncing the PR)
+    - 'dependabot/**'  # prevent GHA triggered twice (once for commit to the branch and once for opening/syncing the PR)
     tags-ignore:  # don't build tags
     - '**'
     paths-ignore:
     - '**/*.md'
     - '.editorconfig'
     - '.git*'
-    - '.github/workflows/stale.yml'
     - '.github/*.yml'
+    - '.github/workflows/stale.yml'
   schedule:
     # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
     - cron: '0 17 * * 3'

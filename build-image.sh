@@ -36,7 +36,7 @@ image_repo=${DOCKER_IMAGE_REPO:-vegardit/gitea-act-runner}
 # resolve gitea act runner version
 #################################################
 case $gitea_act_runner_version in
-  latest) gitea_act_runner_effective_version=$(curl https://gitea.com/gitea/act_runner/releases.rss | grep -oP "releases/tag/v\K\d\.\d\.\d" | head -n 1)
+  latest) gitea_act_runner_effective_version=$(curl https://gitea.com/gitea/act_runner/releases.rss | grep -oP "releases/tag/v\K\d\.\d\.\d\d?" | head -n 1)
           ;;
   *)      gitea_act_runner_effective_version=$gitea_act_runner_version
           ;;

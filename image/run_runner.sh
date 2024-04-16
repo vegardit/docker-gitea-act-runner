@@ -47,7 +47,7 @@ fi
 #################################################
 # register act runner if required
 #################################################
-if [[ ! -s .runner ]]; then
+if [[ ! -s ${GITEA_RUNNER_REGISTRATION_FILE:-.runner} ]]; then
   if [[ -z ${GITEA_RUNNER_REGISTRATION_TOKEN:-} ]]; then
     read -r GITEA_RUNNER_REGISTRATION_TOKEN < "$GITEA_RUNNER_REGISTRATION_TOKEN_FILE"
   fi

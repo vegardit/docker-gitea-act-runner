@@ -60,8 +60,15 @@ docker --version
 docker run --privileged --rm tonistiigi/binfmt --install all
 export DOCKER_BUILD_KIT=1
 export DOCKER_CLI_EXPERIMENTAL=1 # prevents "docker: 'buildx' is not a docker command."
+
+# https://docs.docker.com/build/buildkit/configure/#resource-limiting
+echo "
+[worker.oci]
+  max-parallelism = 3
+" | sudo tee /etc/buildkitd.toml
+
 docker buildx version # ensures buildx is enabled
-docker buildx create --use # prevents: error: multiple platforms feature is currently not supported for docker driver. Please switch to a different driver (eg. "docker buildx create --use")
+docker buildx create --config /etc/buildkitd.toml --use # prevents: error: multiple platforms feature is currently not supported for docker driver. Please switch to a different driver (eg. "docker buildx create --use")
 docker buildx build "$project_root" \
   --file "image/Dockerfile" \
   --progress=plain \

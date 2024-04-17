@@ -53,8 +53,8 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
 
   arch=$(dpkg --print-architecture)
   case $arch in
-    armhf) arch=arm-7 ;;
-    amd64|arm64) ;;
+    armhf)       upx_arch=arm;   gitea_arch=arm-7 ;;
+    amd64|arm64) upx_arch=$arch; gitea_arch=$arch ;;
     *) echo "Unsupported arch: $arch"; exit 1;;
   esac
 
@@ -69,7 +69,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     echo "#################################################"
     apt-get install --no-install-recommends -y xz-utils
     mkdir /opt/upx
-    upx_download_url=$(curl "https://api.github.com/repos/upx/upx/releases/latest" | grep browser_download_url | grep ${arch}_linux.tar.xz | cut "-d\"" -f4)
+    upx_download_url=$(curl "https://api.github.com/repos/upx/upx/releases/latest" | grep browser_download_url | grep ${upx_arch}_linux.tar.xz | cut "-d\"" -f4)
     echo "Downloading [$upx_download_url]..."
     curl "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
     /opt/upx/upx --version
@@ -81,9 +81,9 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   echo "Downloading Gitea act runner..."
   echo "#################################################"
   if [[ $GITEA_ACT_RUNNER_VERSION == "nightly" ]]; then
-    act_runner_download_url=https://dl.gitea.com/act_runner/nightly/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${arch}
+    act_runner_download_url=https://dl.gitea.com/act_runner/nightly/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${gitea_arch}
   else
-    act_runner_download_url=https://gitea.com/gitea/act_runner/releases/download/v${GITEA_ACT_RUNNER_VERSION}/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${arch}
+    act_runner_download_url=https://gitea.com/gitea/act_runner/releases/download/v${GITEA_ACT_RUNNER_VERSION}/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${gitea_arch}
   fi
   echo "Downloading [$act_runner_download_url]..."
   curl "$act_runner_download_url" -o /usr/local/bin/act_runner

@@ -18,17 +18,23 @@ on:
     - '.git*'
     - '.github/*.yml'
     - '.github/workflows/stale.yml'
-  schedule:
-    # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows
-    - cron: '0 17 * * 3'
   pull_request:
+    paths-ignore:
+    - '**/*.md'
+    - '.editorconfig'
+    - '.git*'
+    - '.github/*.yml'
+    - '.github/workflows/stale.yml'
+  schedule:
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows
+    - cron: '0 17 * * 3'
   workflow_dispatch:
+    # https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
     inputs:
       VERSION:
         type: string
         default: latest
         description: Version of the Gitea Act Runner, see https://dl.gitea.com/act_runner/ 
-    # https://github.blog/changelog/2020-07-06-github-actions-manual-triggers-with-workflow_dispatch/
 
 defaults:
   run:
@@ -39,8 +45,10 @@ env:
   TRIVY_CACHE_DIR: ~/.trivy/cache
 
 jobs:
+
+  ###########################################################
   build:
-    runs-on: ubuntu-latest
+  ###########################################################
 
     strategy:
       matrix:
@@ -65,18 +73,30 @@ jobs:
             GITEA_ACT_RUNNER_VERSION: nightly
       fail-fast: true
 
+    runs-on: ubuntu-latest # https://github.com/actions/runner-images#available-images
+    timeout-minutes: 30
+
     steps:
-    - name: Show environment variables
+    - name: "Show: GitHub context"
+      env:
+        GITHUB_CONTEXT: ${{ toJSON(github) }}
+      run: echo $GITHUB_CONTEXT
+
+
+    - name: "Show: environment variables"
       run: env | sort
+
 
     - name: Git Checkout
       uses: actions/checkout@v4  # https://github.com/actions/checkout
+
 
     - name: Check Dockerfile
       uses: hadolint/hadolint-action@v3.1.0
       with:
         dockerfile: image/Dockerfile
         ignore: DL3008,SC1091  # https://github.com/hadolint/hadolint/wiki/DL3008
+
 
     - name: Cache trivy cache
       uses: actions/cache@v4
@@ -87,11 +107,14 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-trivy-
 
+
     - name: Configure fast APT repository mirror
       uses: vegardit/fast-apt-mirror.sh@v1
 
+
     - name: Install dos2unix
       run: sudo apt-get install --no-install-recommends -y dos2unix
+
 
     - name: "Determine if docker images shall be published"
       run: |
@@ -104,9 +127,11 @@ jobs:
           fi
         fi
 
+
     - name: Install regclient
       if: ${{ env.DOCKER_PUSH_GHCR }}
       uses: iarekylew00t/regctl-installer@v1
+
 
     - name: Login to docker.io
       if: ${{ env.DOCKER_PUSH }}
@@ -115,6 +140,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
+
     - name: Login to ghcr.io
       if: ${{ env.DOCKER_PUSH_GHCR }}
       uses: docker/login-action@v3
@@ -122,6 +148,7 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ github.token }}
+
 
     - name: Build ${{ env.DOCKER_IMAGE_REPO }}:${{ env.DOCKER_IMAGE_TAG }}
       env:
@@ -135,6 +162,7 @@ jobs:
            export GITEA_ACT_RUNNER_VERSION="${{ matrix.GITEA_ACT_RUNNER_VERSION }}"
         fi
         bash build-image.sh
+
 
     - name: Delete untagged images
       uses: actions/github-script@v7

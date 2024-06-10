@@ -61,7 +61,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   echo "#################################################"
   echo "Installing required packages..."
   echo "#################################################"
-  apt-get install --no-install-recommends -y binutils ca-certificates curl sudo tini
+  apt-get install --no-install-recommends -y binutils ca-certificates curl sudo tini jq
 
   if [[ $UPX_COMPRESS == "true" ]]; then
     echo "#################################################"

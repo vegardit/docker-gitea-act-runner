@@ -70,7 +70,7 @@ Example `docker-compose.yml`:
 
 - Docker-out-of-Docker approach
    ```yaml
-   version: '3.8' # https://docs.docker.com/compose/compose-file/compose-versioning/
+   # https://docs.docker.com/compose/compose-file/
 
    services:
 
@@ -91,7 +91,7 @@ Example `docker-compose.yml`:
 
 - Docker-in-Docker approach
    ```yaml
-   version: '3.8' # https://docs.docker.com/compose/compose-file/compose-versioning/
+   # https://docs.docker.com/compose/compose-file/
 
    services:
 

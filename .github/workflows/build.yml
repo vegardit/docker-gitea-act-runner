@@ -130,7 +130,7 @@ jobs:
 
     - name: Install regclient
       if: ${{ env.DOCKER_PUSH_GHCR }}
-      uses: iarekylew00t/regctl-installer@v1
+      uses: iarekylew00t/regctl-installer@v3
 
 
     - name: Login to docker.io

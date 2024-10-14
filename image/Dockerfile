@@ -104,6 +104,8 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     echo "#################################################"
     echo "Installing docker engine..."
     echo "#################################################"
+    # git needed by buildx
+    apt-get install --no-install-recommends -y git
     # https://docs.docker.com/engine/install/debian/#install-using-the-repository
     apt-get install --no-install-recommends -y gnupg
     install -m 0755 -d /etc/apt/keyrings

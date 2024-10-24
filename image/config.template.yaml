@@ -1,4 +1,4 @@
-# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.6/internal/pkg/config/config.example.yaml
+# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.11/internal/pkg/config/config.example.yaml
 
 log:
   # The level of logging, can be trace, debug, info, warn, error, fatal
@@ -27,6 +27,9 @@ runner:
   # Please note that the Gitea instance also has a timeout (3h by default) for the job.
   # So the job could be stopped by the Gitea instance if it's timeout is shorter than this.
   timeout: '${GITEA_RUNNER_JOB_TIMEOUT:-3h}'
+  # The timeout for the runner to wait for running jobs to finish when shutting down.
+  # Any running jobs that haven't finished after this timeout will be cancelled.
+  shutdown_timeout: ${GITEA_RUNNER_SHUTDOWN_TIMEOUT:-0s}
   # Whether skip verifying the TLS certificate of the Gitea instance.
   insecure: ${GITEA_INSTANCE_INSECURE:-false}
   # The timeout for fetching the job from the Gitea instance.
@@ -34,10 +37,11 @@ runner:
   # The interval for fetching the job from the Gitea instance.
   fetch_interval: '${GITEA_RUNNER_FETCH_INTERVAL:-2s}'
   # The labels of a runner are used to determine which jobs the runner can run, and how to run them.
-  # Like: ["macos-arm64:host", "ubuntu-latest:docker://node:16-bullseye", "ubuntu-22.04:docker://node:16-bullseye"]
+  # Like: "macos-arm64:host" or "ubuntu-latest:docker://gitea/runner-images:ubuntu-latest"
+  # Find more images provided by Gitea at https://gitea.com/gitea/runner-images .
   # If it's empty when registering, it will ask for inputting labels.
   # If it's empty when execute `daemon`, will use labels in `.runner` file.
-  #labels: []
+  labels: [ "${GITEA_RUNNER_LABELS//,/","}" ]
 
 cache:
   # Enable cache server to use actions/cache.
@@ -67,6 +71,9 @@ container:
   # And other options to be used when the container is started (eg, --add-host=my.gitea.url:host-gateway).
   options: '${GITEA_RUNNER_JOB_CONTAINER_OPTIONS:-}'
   # The parent directory of a job's working directory.
+  # NOTE: There is no need to add the first '/' of the path as act_runner will add it automatically.
+  # If the path starts with '/', the '/' will be trimmed.
+  # For example, if the parent directory is /path/to/my/dir, workdir_parent should be path/to/my/dir
   # If it's empty, /workspace will be used.
   workdir_parent: ${GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT:-/workspace}
   # Volumes (including bind mounts) can be mounted to containers. Glob syntax is supported, see https://github.com/gobwas/glob
@@ -93,7 +100,10 @@ container:
   # If it's "-", act_runner will find an available docker host automatically, but the docker host won't be mounted to the job containers and service containers.
   # If it's not empty or "-", the specified docker host will be used. An error will be returned if it doesn't work.
   docker_host: '${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST:-}'
-  force_pull: ${GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL:-false}
+  # Pull docker image(s) even if already present
+  force_pull: ${GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL:-true}
+  # Rebuild docker image(s) even if already present
+  force_rebuild: ${GITEA_RUNNER_JOB_CONTAINER_FORCE_REBUILD:-false}
 
 host:
   # The parent directory of a job's working directory.

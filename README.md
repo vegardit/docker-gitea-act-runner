@@ -119,7 +119,7 @@ Name|Default Value|Description
 ----|-------------|-----------
 GITEA_INSTANCE_INSECURE|`false`|It `true` don't verify the TLS certificate of the Gitea instance
 GITEA_RUNNER_NAME|`<empty>`|If not specified the container's hostname is used
-GITEA_RUNNER_LABELS|`<empty>`|Comma-separated list of labels in the format of `label[:schema[:args]]`. If not specified the following labels are used `ubuntu-latest:docker://catthehacker/ubuntu:act-22.04,ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04,ubuntu-20.04:docker://catthehacker/ubuntu:act-20.04`
+GITEA_RUNNER_LABELS|`<empty>`|Comma-separated list of labels in the format of `label[:schema[:args]]`.<br>If not specified the following labels are used<ol><li>`ubuntu-latest:docker://catthehacker/ubuntu:act-latest`<li>`ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04`<li>`ubuntu-20.04:docker://catthehacker/ubuntu:act-20.04`</ol>
 GITEA_RUNNER_REGISTRATION_FILE|`/data/.runner`|The JSON file that holds the result from the runner registration with the Gitea instance
 GITEA_RUNNER_REGISTRATION_TIMEOUT|`30`|In case of failure, registration is retried until this timeout in seconds is reached
 GITEA_RUNNER_REGISTRATION_RETRY_INTERVAL|`5`|Wait period in seconds between registration retries
@@ -148,9 +148,11 @@ GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST|`<empty>`|If empty, the available docker 
 GITEA_RUNNER_JOB_CONTAINER_NETWORK|`bridge`|Docker network to use with job containers. Can be `bridge`, `host`, `none`, or the name of a custom network
 GITEA_RUNNER_JOB_CONTAINER_PRIVILEGED|`false`|Whether to run jobs in containers with privileged mode which is required for **Docker-in-Docker** aka **dind**
 GITEA_RUNNER_JOB_CONTAINER_OPTIONS|`<empty>`|Additional container launch options (eg, --add-host=my.gitea.url:host-gateway)
-GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT|`/workspace`|The parent directory of a job's working directory.
-GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL|`false`|Pull docker images even if already present
+GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT|`/workspace`|The parent directory of a job's working directory
+GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL|`true`|Pull docker image(s) even if already present
+GITEA_RUNNER_JOB_CONTAINER_FORCE_REBUILD|`false`|Rebuild docker image(s) even if already present
 GITEA_RUNNER_JOB_TIMEOUT|`3h`|The maximum time a job can run before it is cancelled
+GITEA_RUNNER_SHUTDOWN_TIMEOUT|`0s`|The timeout for the runner to wait for running jobs to finish when shutting down
 GITEA_RUNNER_ENV_VAR_**N**_NAME|`<empty>`|Name of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_NAME=MY_AUTH_TOKEN`
 GITEA_RUNNER_ENV_VAR_**N**_VALUE|`<empty>`|Value of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_VALUE=SGVsbG8gbXkgZnJpZW5kIQ==`
 GITEA_RUNNER_VALID_VOLUME_**N**|`<empty>`|Volumes (including bind mounts) that are allowed to be mounted into job containers. [Glob syntax](https://github.com/gobwas/glob) is supported, e.g. `GITEA_RUNNER_VALID_VOLUME_1=/src/*.json`

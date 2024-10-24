@@ -24,6 +24,10 @@ fi
 #################################################
 # render config file
 #################################################
+if [[ -z ${GITEA_RUNNER_LABELS:-} ]]; then
+  GITEA_RUNNER_LABELS=$GITEA_RUNNER_LABELS_DEFAULT
+fi
+
 effective_config_file=/tmp/gitea_act_runner_config.yml
 rm -f "$effective_config_file"
 if [[ ${GITEA_RUNNER_LOG_EFFECTIVE_CONFIG:-false} == "true" ]]; then
@@ -52,13 +56,10 @@ if [[ ! -s ${GITEA_RUNNER_REGISTRATION_FILE:-.runner} ]]; then
     read -r GITEA_RUNNER_REGISTRATION_TOKEN < "$GITEA_RUNNER_REGISTRATION_TOKEN_FILE"
   fi
 
-  if [[ -z ${GITEA_RUNNER_LABELS:-} ]]; then
-    GITEA_RUNNER_LABELS=$GITEA_RUNNER_LABELS_DEFAULT
-  fi
-
   log INFO "Trying to register runner with Gitea..."
   log INFO "  GITEA_INSTANCE_URL=$GITEA_INSTANCE_URL"
   log INFO "  GITEA_RUNNER_NAME=$GITEA_RUNNER_NAME"
+  log INFO "  GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_RUNNER_REGISTRATION_TOKEN//?/*}"
   log INFO "  GITEA_RUNNER_LABELS=$GITEA_RUNNER_LABELS"
   wait_until=$(( $(date +%s) + $GITEA_RUNNER_REGISTRATION_TIMEOUT ))
   while true; do

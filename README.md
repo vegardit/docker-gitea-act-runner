@@ -76,7 +76,6 @@ Example `docker-compose.yml`:
 
      gitea_act_runner:
        image: vegardit/gitea-act-runner:latest
-       #image: ghcr.io/vegardit/gitea-act-runner:latest
        restart: always
        volumes:
          - /var/run/docker.sock:/var/run/docker.sock:rw
@@ -97,7 +96,6 @@ Example `docker-compose.yml`:
 
      gitea_act_runner:
        image: vegardit/gitea-act-runner:dind-latest
-       #image: ghcr.io/vegarditgitea-act-runner:dind-latest
        privileged: true
        restart: always
        volumes:

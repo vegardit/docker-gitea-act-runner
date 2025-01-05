@@ -138,7 +138,7 @@ The following environment variables are referenced in the `/opt/config.template.
 
 Name|Default Value|Description
 ----|-------------|-----------
-GITEA_RUNNER_LABELS|`<empty>`|Comma-separated list of labels in the format of `label[:schema[:args]]`.<br>If not specified the following labels are used<ol><li>`ubuntu-latest:docker://catthehacker/ubuntu:act-latest`<li>`ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04`<li>`ubuntu-20.04:docker://catthehacker/ubuntu:act-20.04`</ol>
+GITEA_RUNNER_LABELS|`<empty>`|Comma-separated list of labels in the format of `label[:schema[:args]]`.<br>If not specified the following labels are used<ol><li>`ubuntu-latest:docker://catthehacker/ubuntu:act-latest`<li>`ubuntu-24.04:docker://catthehacker/ubuntu:act-24.04<li>`ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04`<li>`ubuntu-20.04:docker://catthehacker/ubuntu:act-20.04`</ol>
 GITEA_RUNNER_LOG_LEVEL|`info`|The level of logging, can be trace, debug, info, warn, error, fatal
 GITEA_RUNNER_ENV_FILE|`/data/.env`|Extra environment variables to run jobs from a file
 GITEA_RUNNER_FETCH_TIMEOUT|`5s`|The timeout for fetching the job from the Gitea instance

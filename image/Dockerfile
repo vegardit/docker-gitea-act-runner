@@ -177,11 +177,12 @@ ARG GIT_COMMIT_HASH
 ARG GIT_COMMIT_DATE
 ARG GIT_REPO_URL
 
+# https://github.com/opencontainers/image-spec/blob/main/annotations.md
 LABEL \
-  org.label-schema.schema-version="1.0" \
-  org.label-schema.build-date=$BUILD_DATE \
-  org.label-schema.vcs-ref=$GIT_COMMIT_HASH \
-  org.label-schema.vcs-url=$GIT_REPO_URL
+  org.opencontainers.image.source=$GIT_REPO_URL \
+  org.opencontainers.image.created=$BUILD_DATE \
+  org.opencontainers.image.revision=$GIT_COMMIT_HASH \
+  org.opencontainers.image.vision=$GIT_COMMIT_HASH
 
 # Default configuration: can be overridden at the docker command line
 ENV \

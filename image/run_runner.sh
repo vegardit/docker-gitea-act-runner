@@ -5,11 +5,13 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-ArtifactOfProjectHomePage: https://github.com/vegardit/docker-gitea-act-runner
 #
+
+# shellcheck disable=SC1091  # Not following: /opt/bash-init.sh was not specified as input
 source /opt/bash-init.sh
 
 log INFO "Effective user: $(id)"
 
-cd /data
+cd /data || exit 1
 
 
 #################################################
@@ -17,6 +19,7 @@ cd /data
 #################################################
 if [[ -f "$INIT_SH_FILE" ]]; then
   log INFO "Loading [$INIT_SH_FILE]..."
+  # shellcheck disable=SC1090  # ShellCheck can't follow non-constant source
   source "$INIT_SH_FILE"
 fi
 
@@ -37,14 +40,14 @@ if [[ ${GITEA_RUNNER_LOG_EFFECTIVE_CONFIG:-false} == "true" ]]; then
     line=${line//\"/\\\"} # escape double quotes
     line=${line//\`/\\\`} # escape backticks
     eval "echo \"$line\"" | tee -a "$effective_config_file"
-  done < $GITEA_RUNNER_CONFIG_TEMPLATE_FILE
+  done < "$GITEA_RUNNER_CONFIG_TEMPLATE_FILE"
   echo "==========================================================="
 else
   while IFS= read -r line; do
     line=${line//\"/\\\"} # escape double quotes
     line=${line//\`/\\\`} # escape backticks
     eval "echo \"$line\"" >> "$effective_config_file"
-  done < $GITEA_RUNNER_CONFIG_TEMPLATE_FILE
+  done < "$GITEA_RUNNER_CONFIG_TEMPLATE_FILE"
 fi
 
 
@@ -61,7 +64,7 @@ if [[ ! -s ${GITEA_RUNNER_REGISTRATION_FILE:-.runner} ]]; then
   log INFO "  GITEA_RUNNER_NAME=$GITEA_RUNNER_NAME"
   log INFO "  GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_RUNNER_REGISTRATION_TOKEN//?/*}"
   log INFO "  GITEA_RUNNER_LABELS=$GITEA_RUNNER_LABELS"
-  wait_until=$(( $(date +%s) + $GITEA_RUNNER_REGISTRATION_TIMEOUT ))
+  wait_until=$(( $(date +%s) + GITEA_RUNNER_REGISTRATION_TIMEOUT ))
   while true; do
     if act_runner register \
       --instance "$GITEA_INSTANCE_URL" \
@@ -84,6 +87,7 @@ fi
 #################################################
 # unset all variables named GITEA_... to prevent deprecation warning
 #################################################
+# shellcheck disable=SC2046  # Quote this to prevent word splitting
 unset $(env | grep "^GITEA_" | cut -d= -f1)
 
 
@@ -97,13 +101,13 @@ case $DOCKER_MODE in
 
     function shutdown_act() {
       log INFO "Stopping act_runner..."
-      kill -SIGTERM $act_runner_pid || true
+      kill -SIGTERM "$act_runner_pid" || true
     }
 
     function shutdown_docker() {
       log INFO "Stopping docker engine..."
       if [[ $DOCKER_MODE == "dind-rootless" ]]; then
-        kill -SIGTERM $DOCKER_PID
+        kill -SIGTERM "$DOCKER_PID"
       else
         sudo service docker stop
       fi

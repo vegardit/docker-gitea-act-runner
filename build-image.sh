@@ -9,8 +9,9 @@ function curl() {
   command curl -sSfL --connect-timeout 10 --max-time 30 --retry 3 --retry-all-errors "$@"
 }
 
-shared_lib="$(dirname $0)/.shared"
-[ -e "$shared_lib" ] || curl https://raw.githubusercontent.com/vegardit/docker-shared/v1/download.sh?_=$(date +%s) | bash -s v1 "$shared_lib" || exit 1
+shared_lib="$(dirname "${BASH_SOURCE[0]}")/.shared"
+[[ -e $shared_lib ]] || curl "https://raw.githubusercontent.com/vegardit/docker-shared/v1/download.sh?_=$(date +%s)" | bash -s v1 "$shared_lib" || exit 1
+# shellcheck disable=SC1091  # Not following: $shared_lib/lib/build-image-init.sh was not specified as input
 source "$shared_lib/lib/build-image-init.sh"
 
 
@@ -69,42 +70,43 @@ echo "
 
 docker buildx version # ensures buildx is enabled
 docker buildx create --config /etc/buildkitd.toml --use # prevents: error: multiple platforms feature is currently not supported for docker driver. Please switch to a different driver (eg. "docker buildx create --use")
+# shellcheck disable=SC2154,SC2046  # base_layer_cache_key is referenced but not assigned / Quote this to prevent word splitting
 docker buildx build "$project_root" \
   --file "image/Dockerfile" \
   --progress=plain \
   --pull \
-  --build-arg INSTALL_SUPPORT_TOOLS=${INSTALL_SUPPORT_TOOLS:-0} \
+  --build-arg INSTALL_SUPPORT_TOOLS="${INSTALL_SUPPORT_TOOLS:-0}" \
   `# using the current date as value for BASE_LAYER_CACHE_KEY, i.e. the base layer cache (that holds system packages with security updates) will be invalidate once per day` \
-  --build-arg BASE_LAYER_CACHE_KEY=$base_layer_cache_key \
-  --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+  --build-arg BASE_LAYER_CACHE_KEY="$base_layer_cache_key" \
+  --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
   --build-arg GIT_BRANCH="${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}" \
-  --build-arg GIT_COMMIT_DATE="$(date -d @$(git log -1 --format='%at') --utc +'%Y-%m-%d %H:%M:%S UTC')" \
+  --build-arg GIT_COMMIT_DATE="$(date -d "@$(git log -1 --format='%at')" --utc +'%Y-%m-%d %H:%M:%S UTC')" \
   --build-arg GIT_COMMIT_HASH="$(git rev-parse --short HEAD)" \
   --build-arg GIT_REPO_URL="$(git config --get remote.origin.url)" \
   --build-arg GITEA_ACT_RUNNER_VERSION="$gitea_act_runner_effective_version" \
-  --build-arg FLAVOR=$DOCKER_IMAGE_FLAVOR \
+  --build-arg FLAVOR="$DOCKER_IMAGE_FLAVOR" \
   $(if [[ "${ACT:-}" == "true" || "${DOCKER_PUSH:-}" != "true" ]]; then \
     echo -n "--load --output type=docker"; \
   else \
     echo -n "--platform linux/amd64,linux/arm64,linux/arm/v7"; \
   fi) \
-  -t $image_name \
-  -t $image_name2 \
+  -t "$image_name" \
+  -t "$image_name2" \
   $(if [[ "${DOCKER_PUSH:-}" == "true" ]]; then echo -n "--push"; fi) \
   "$@"
 docker buildx stop
 set +x
 
 if [[ "${DOCKER_PUSH:-}" == "true" ]]; then
-  docker image pull $image_name
+  docker image pull "$image_name"
 fi
 
 #################################################
 # push image to ghcr.io
 #################################################
 if [[ "${DOCKER_PUSH_GHCR:-}" == "true" ]]; then
-  (set -x; regctl image copy $image_name ghcr.io/$image_name)
-  (set -x; regctl image copy $image_name2 ghcr.io/$image_name2)
+  (set -x; regctl image copy "$image_name" "ghcr.io/$image_name")
+  (set -x; regctl image copy "$image_name2" "ghcr.io/$image_name2")
 fi
 
 
@@ -113,7 +115,7 @@ fi
 #################################################
 echo
 log INFO "Testing docker image [$image_name]..."
-(set -x; docker run --rm $image_name act_runner --version)
+(set -x; docker run --rm "$image_name" act_runner --version)
 echo
 
 
@@ -122,5 +124,5 @@ echo
 #################################################
 # TODO see https://gitea.com/gitea/act_runner/issues/513
 if [[ "${DOCKER_AUDIT_IMAGE:-1}" == 1 && "$GITEA_ACT_RUNNER_VERSION" == "nightly" ]]; then
-  bash "$shared_lib/cmd/audit-image.sh" $image_name
+  bash "$shared_lib/cmd/audit-image.sh" "$image_name"
 fi

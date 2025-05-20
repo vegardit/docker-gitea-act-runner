@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-ArtifactOfProjectHomePage: https://github.com/vegardit/docker-gitea-act-runner
 
+# shellcheck disable=SC1091  # Not following: /opt/bash-init.sh was not specified as input
 source /opt/bash-init.sh
 
 #################################################################
@@ -23,7 +24,7 @@ EOF
   cat /opt/build_info
   echo
 
-  log INFO $(act_runner --version)
+  log INFO "$(act_runner --version)"
   log INFO "Timezone: $(date +"%Z %z")"
   log INFO "Hostname: $(hostname -f)"
   log INFO "IP Addresses: "
@@ -40,17 +41,17 @@ if [[ -f /usr/bin/dockerd-rootless.sh ]]; then
   export DOCKER_MODE=dind-rootless
   log INFO "Starting Docker engine (rootless)..."
   export DOCKER_HOST=unix://$HOME/.docker/run/docker.sock
-  if [ ! -f $HOME/.config/docker/daemon.json ]; then
+  if [[ ! -f "$HOME/.config/docker/daemon.json" ]]; then
     # workaround for "Not using native diff for overlay2, this may cause degraded performance for building images: running in a user namespace  storage-driver=overlay2"
-    mkdir -p $HOME/.config/docker
-    echo '{"storage-driver":"fuse-overlayfs"}' > $HOME/.config/docker/daemon.json
+    mkdir -p "$HOME/.config/docker"
+    echo '{"storage-driver":"fuse-overlayfs"}' > "$HOME/.config/docker/daemon.json"
   fi
 
   export container=docker # from dind-hack
   export XDG_RUNTIME_DIR=$HOME/.docker/run
-  mkdir -p $XDG_RUNTIME_DIR
-  rm -f $XDG_RUNTIME_DIR/docker.pid $XDG_RUNTIME_DIR/docker/containerd/containerd.pid
-  /usr/bin/dockerd-rootless.sh -p $HOME/.docker/run/docker.pid > "$HOME/.docker/docker.log" 2>&1 &
+  mkdir -p "$XDG_RUNTIME_DIR"
+  rm -f "$XDG_RUNTIME_DIR/docker.pid" "$XDG_RUNTIME_DIR/docker/containerd/containerd.pid"
+  /usr/bin/dockerd-rootless.sh -p "$HOME/.docker/run/docker.pid" > "$HOME/.docker/docker.log" 2>&1 &
   export DOCKER_PID=$!
   while ! docker stats --no-stream &>/dev/null; do
     log INFO "Waiting for Docker engine to start..."
@@ -71,6 +72,7 @@ elif [[ -f /usr/bin/dockerd ]]; then
     sleep 2
     tail -n 1 /var/log/docker.log
   done
+  # shellcheck disable=SC2155  # Declare and assign separately to avoid masking return values
   export DOCKER_PID=$(</var/run/docker.pid)
   echo "==========================================================="
   docker info
@@ -88,16 +90,16 @@ fi
 # check if act user UID/GID needs adjustment
 #################################################################
 fix_permissions=false
-if [ -n "${GITEA_RUNNER_UID:-}" ]; then
+if [[ -n ${GITEA_RUNNER_UID:-} ]]; then
   effective_uid=$(id -u act)
-  if [ "$GITEA_RUNNER_UID" != "$effective_uid" ]; then
+  if [[ $GITEA_RUNNER_UID != "$effective_uid" ]]; then
     fix_permissions=true
   fi
 fi
 
-if [ -n "${GITEA_RUNNER_GID:-}" ]; then
+if [[ -n ${GITEA_RUNNER_GID:-} ]]; then
   effective_gid=$(id -g act)
-  if [ "$GITEA_RUNNER_GID" != "$effective_gid" ]; then
+  if [[ $GITEA_RUNNER_GID != "$effective_gid" ]]; then
     fix_permissions=true
   fi
 fi
@@ -110,9 +112,9 @@ if [[ $DOCKER_MODE != "dind-rootless" ]]; then
   if [[ $GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST == unix://* ]]; then
     docker_sock=${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST#unix://}
     if [[ ! -w $docker_sock || ! -r $docker_sock ]]; then
-      docker_group=$(stat -c '%G' $docker_sock)
+      docker_group=$(stat -c '%G' "$docker_sock")
       if [[ $docker_group == "UNKNOWN" ]]; then
-        docker_gid=$(stat -c '%g' $docker_sock)
+        docker_gid=$(stat -c '%g' "$docker_sock")
         docker_group="docker$docker_gid"
         fix_permissions=true
       fi

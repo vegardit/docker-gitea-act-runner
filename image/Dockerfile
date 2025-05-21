@@ -1,4 +1,4 @@
-#syntax=docker/dockerfile:1.4
+#syntax=docker/dockerfile:1
 # see https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/syntax.md#user-content-syntax
 # see https://docs.docker.com/build/dockerfile/frontend/
 # see https://docs.docker.com/engine/reference/builder/#syntax
@@ -7,13 +7,18 @@
 # SPDX-FileContributor: Sebastian Thomschke
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-ArtifactOfProjectHomePage: https://github.com/vegardit/docker-gitea-act-runner
-#
-# https://hub.docker.com/_/debian?tab=tags&name=stable-slim
 
-FROM debian:stable-slim
+# https://hub.docker.com/_/debian/tags?name=stable-slim
+ARG BASE_IMAGE=debian:stable-slim
+
+# https://github.com/hadolint/hadolint/wiki/DL3006 Always tag the version of an image explicitly
+# hadolint ignore=DL3006
+FROM ${BASE_IMAGE}
 
 LABEL maintainer="Vegard IT GmbH (vegardit.com)"
 
+# https://github.com/hadolint/hadolint/wiki/DL3002 Last USER should not be root
+# hadolint ignore=DL3002
 USER root
 
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -31,8 +36,9 @@ ARG BASE_LAYER_CACHE_KEY
 ARG FLAVOR
 ARG GITEA_ACT_RUNNER_VERSION
 
+# https://github.com/hadolint/hadolint/wiki/DL3008 Pin versions
+# hadolint ignore=DL3008
 RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
-
   /mnt/shared/cmd/debian-install-os-updates.sh
   /mnt/shared/cmd/debian-install-support-tools.sh
 
@@ -52,7 +58,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   }
 
   arch=$(dpkg --print-architecture)
-  case $arch in
+  case "$arch" in
     armhf)       upx_arch=arm;   gitea_arch=arm-7 ;;
     amd64|arm64) upx_arch=$arch; gitea_arch=$arch ;;
     *) echo "Unsupported arch: $arch"; exit 1;;
@@ -69,7 +75,7 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     echo "#################################################"
     apt-get install --no-install-recommends -y xz-utils
     mkdir /opt/upx
-    upx_download_url=$(curl "https://api.github.com/repos/upx/upx/releases/latest" | grep browser_download_url | grep ${upx_arch}_linux.tar.xz | cut "-d\"" -f4)
+    upx_download_url=$(curl "https://api.github.com/repos/upx/upx/releases/latest" | grep browser_download_url | grep "${upx_arch}_linux.tar.xz" | cut "-d\"" -f4)
     echo "Downloading [$upx_download_url]..."
     curl "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
     /opt/upx/upx --version
@@ -81,9 +87,9 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   echo "Downloading Gitea act runner..."
   echo "#################################################"
   if [[ $GITEA_ACT_RUNNER_VERSION == "nightly" ]]; then
-    act_runner_download_url=https://dl.gitea.com/act_runner/nightly/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${gitea_arch}
+    act_runner_download_url="https://dl.gitea.com/act_runner/nightly/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${gitea_arch}"
   else
-    act_runner_download_url=https://gitea.com/gitea/act_runner/releases/download/v${GITEA_ACT_RUNNER_VERSION}/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${gitea_arch}
+    act_runner_download_url="https://gitea.com/gitea/act_runner/releases/download/v${GITEA_ACT_RUNNER_VERSION}/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${gitea_arch}"
   fi
   echo "Downloading [$act_runner_download_url]..."
   curl "$act_runner_download_url" -o /usr/local/bin/act_runner
@@ -111,9 +117,11 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     install -m 0755 -d /etc/apt/keyrings
     curl "https://download.docker.com/linux/debian/gpg" | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     chmod a+r /etc/apt/keyrings/docker.gpg
-    echo \
-      "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-      "$(source /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list
+
+    ARCH="$(dpkg --print-architecture)"
+    # shellcheck disable=SC1091 # Not following: File not included in mock
+    OS_CODENAME="$(source /etc/os-release && echo "$VERSION_CODENAME")"
+    echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $OS_CODENAME stable" > /etc/apt/sources.list.d/docker.list
     apt-get update
     (set -x; apt-get install --no-install-recommends -y docker-ce containerd.io fuse-overlayfs)
     apt-get remove -y gnupg

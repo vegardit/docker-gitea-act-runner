@@ -4,7 +4,6 @@
 # SPDX-FileContributor: Sebastian Thomschke
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-ArtifactOfProjectHomePage: https://github.com/vegardit/docker-gitea-act-runner
-#
 
 # shellcheck disable=SC1091  # Not following: /opt/bash-init.sh was not specified as input
 source /opt/bash-init.sh

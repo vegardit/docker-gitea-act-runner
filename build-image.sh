@@ -15,8 +15,8 @@ source "$shared_lib/lib/build-image-init.sh"
 # declare image meta
 #################################################
 gitea_act_runner_version=${GITEA_ACT_RUNNER_VERSION:-latest}
-base_image=${DOCKER_BASE_IMAGE:-debian:stable-slim}
 image_repo=${DOCKER_IMAGE_REPO:-vegardit/gitea-act-runner}
+base_image=${DOCKER_BASE_IMAGE:-debian:stable-slim}
 
 platforms="linux/amd64,linux/arm64/v8,linux/arm/v7"
 
@@ -30,6 +30,7 @@ declare -A image_meta=(
   [created]="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 )
 
+
 #################################################
 # resolve gitea act runner version
 #################################################
@@ -39,6 +40,9 @@ case $gitea_act_runner_version in
 esac
 
 
+#################################################
+# define tags
+#################################################
 declare -a tags=()
 tags+=("${DOCKER_IMAGE_TAG_PREFIX:-}$gitea_act_runner_version")
 tags+=("${DOCKER_IMAGE_TAG_PREFIX:-}$gitea_act_runner_effective_version")

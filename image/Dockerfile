@@ -1,6 +1,5 @@
 #syntax=docker/dockerfile:1
-# see https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/syntax.md#user-content-syntax
-# see https://docs.docker.com/build/dockerfile/frontend/
+# see https://github.com/moby/buildkit/blob/master/frontend/dockerfile/docs/reference.md
 # see https://docs.docker.com/engine/reference/builder/#syntax
 #
 # SPDX-FileCopyrightText: © Vegard IT GmbH (https://vegardit.com)
@@ -11,26 +10,23 @@
 # https://hub.docker.com/_/debian/tags?name=stable-slim
 ARG BASE_IMAGE=debian:stable-slim
 
+#############################################################
+# build final image
+#############################################################
+
 # https://github.com/hadolint/hadolint/wiki/DL3006 Always tag the version of an image explicitly
 # hadolint ignore=DL3006
-FROM ${BASE_IMAGE}
-
-LABEL maintainer="Vegard IT GmbH (vegardit.com)"
-
-# https://github.com/hadolint/hadolint/wiki/DL3002 Last USER should not be root
-# hadolint ignore=DL3002
-USER root
-
-SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+FROM ${BASE_IMAGE} as final
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG LC_ALL=C
 
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 ARG INSTALL_SUPPORT_TOOLS=0
+ARG BASE_LAYER_CACHE_KEY
 
 ARG UPX_COMPRESS=true
-
-ARG BASE_LAYER_CACHE_KEY
 
 # dood|dind|dind-rootless
 ARG FLAVOR
@@ -179,19 +175,6 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
 
 EOF
 
-ARG BUILD_DATE
-ARG GIT_BRANCH
-ARG GIT_COMMIT_HASH
-ARG GIT_COMMIT_DATE
-ARG GIT_REPO_URL
-
-# https://github.com/opencontainers/image-spec/blob/main/annotations.md
-LABEL \
-  org.opencontainers.image.source=$GIT_REPO_URL \
-  org.opencontainers.image.created=$BUILD_DATE \
-  org.opencontainers.image.revision=$GIT_COMMIT_HASH \
-  org.opencontainers.image.vision=$GIT_COMMIT_HASH
-
 # Default configuration: can be overridden at the docker command line
 ENV \
   INIT_SH_FILE='' \
@@ -211,16 +194,38 @@ ubuntu-20.04:docker://catthehacker/ubuntu:act-20.04' \
   GITEA_RUNNER_REGISTRATION_TIMEOUT=30\
   GITEA_RUNNER_REGISTRATION_RETRY_INTERVAL=5s
 
-RUN <<EOF
+ARG OCI_authors
+ARG OCI_title
+ARG OCI_description
+ARG OCI_source
+ARG OCI_revision
+ARG OCI_version
+ARG OCI_created
 
+ARG GIT_BRANCH
+ARG GIT_COMMIT_DATE
+
+# https://github.com/opencontainers/image-spec/blob/main/annotations.md
+LABEL \
+  org.opencontainers.image.title="$OCI_title" \
+  org.opencontainers.image.description="$OCI_description" \
+  org.opencontainers.image.source="$OCI_source" \
+  org.opencontainers.image.revision="$OCI_revision" \
+  org.opencontainers.image.version="$OCI_version" \
+  org.opencontainers.image.created="$OCI_created"
+
+LABEL maintainer="$OCI_authors"
+
+RUN <<EOF
   echo "#################################################"
   echo "Writing build_info..."
   echo "#################################################"
-  echo "
-GIT_REPO:    $GIT_REPO_URL
+  cat <<EOT >/opt/build_info
+GIT_REPO:    $OCI_source
 GIT_BRANCH:  $GIT_BRANCH
-GIT_COMMIT:  $GIT_COMMIT_HASH @ $GIT_COMMIT_DATE
-IMAGE_BUILD: $BUILD_DATE" >/opt/build_info
+GIT_COMMIT:  $OCI_revision @ $GIT_COMMIT_DATE
+IMAGE_BUILD: $OCI_created
+EOT
   cat /opt/build_info
 
 EOF

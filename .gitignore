@@ -35,3 +35,6 @@ nb-configuration.xml
 # patch
 *.orig
 *.rej
+
+# nektos/act
+.actrc

@@ -184,10 +184,10 @@ ENV \
   GITEA_RUNNER_NAME='' \
   GITEA_RUNNER_LABELS='' \
   GITEA_RUNNER_LABELS_DEFAULT='\
-ubuntu-latest:docker://catthehacker/ubuntu:act-latest,\
-ubuntu-24.04:docker://catthehacker/ubuntu:act-24.04,\
-ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04,\
-ubuntu-20.04:docker://catthehacker/ubuntu:act-20.04' \
+ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-latest,\
+ubuntu-24.04:docker://ghcr.io/catthehacker/ubuntu:act-24.04,\
+ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04,\
+ubuntu-20.04:docker://ghcr.io/catthehacker/ubuntu:act-20.04' \
   GITEA_RUNNER_UID=1000 \
   GITEA_RUNNER_GID=1000 \
   #

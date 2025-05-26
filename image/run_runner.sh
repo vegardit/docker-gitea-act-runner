@@ -100,15 +100,15 @@ case $DOCKER_MODE in
 
     function shutdown_act() {
       log INFO "Stopping act_runner..."
-      kill -SIGTERM "$act_runner_pid" || true
+      (set -x; kill -SIGTERM "$act_runner_pid" || true)
     }
 
     function shutdown_docker() {
       log INFO "Stopping docker engine..."
       if [[ $DOCKER_MODE == "dind-rootless" ]]; then
-        kill -SIGTERM "$DOCKER_PID"
+        (set -x; kill -SIGTERM "$DOCKER_PID")
       else
-        sudo service docker stop
+        (set -x; sudo service docker stop)
       fi
       while [[ -e /proc/$DOCKER_PID ]]; do
         log INFO "Waiting for docker engine to shutdown..."

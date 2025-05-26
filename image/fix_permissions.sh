@@ -22,11 +22,11 @@ if [[ -n ${GITEA_RUNNER_UID:-} ]]; then
     #    usermod -o -u "$GITEA_RUNNER_UID" $act_user
     # failing with "usermod: user act is currently used by process 1" because of /usr/bin/tini process
     effective_gid=$(id -g "$act_user")
-    sed -i "s/^$act_user:x:$effective_uid:$effective_gid/$act_user:x:$GITEA_RUNNER_UID:$effective_gid/" /etc/passwd
+    sed -i "s/^$act_user:x:$effective_uid:$effective_gid:/$act_user:x:$GITEA_RUNNER_UID:$effective_gid:/" /etc/passwd
 
     act_home=$(eval echo "~$act_user")
     chown "$GITEA_RUNNER_UID" "$act_home"
-    find "$act_home" -user "$effective_uid" -exec chown "$GITEA_RUNNER_UID" {} \;
+    find "$act_home" -xdev -user "$effective_uid" -print0 | xargs -0 chown "$GITEA_RUNNER_UID"
   fi
 fi
 
@@ -38,7 +38,7 @@ if [[ -n ${GITEA_RUNNER_GID:-} ]]; then
 
     act_home=$(eval echo "~$act_user")
     chown ":$GITEA_RUNNER_GID" "$act_home"
-    find "$act_home" -group "$effective_gid" -exec chgrp "$GITEA_RUNNER_GID" {} \;
+    find "$act_home" -xdev -group "$effective_gid" -print0 | xargs -0 chgrp "$GITEA_RUNNER_GID"
   fi
 fi
 

@@ -71,7 +71,9 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     echo "#################################################"
     apt-get install --no-install-recommends -y xz-utils
     mkdir /opt/upx
-    upx_download_url=$(curl "https://api.github.com/repos/upx/upx/releases/latest" | grep browser_download_url | grep "${upx_arch}_linux.tar.xz" | cut "-d\"" -f4)
+    # https://api.github.com/repos/upx/upx/releases/latest -> points to 5.0.1 which crashes with "3972 Segmentation fault (core dumped) docker --version"
+    # https://api.github.com/repos/upx/upx/releases/154915740 -> points to 4.2.4
+    upx_download_url=$(curl "https://api.github.com/repos/upx/upx/releases/154915740" | grep browser_download_url | grep "${upx_arch}_linux.tar.xz" | cut "-d\"" -f4)
     echo "Downloading [$upx_download_url]..."
     curl "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1
     /opt/upx/upx --version

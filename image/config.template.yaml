@@ -1,4 +1,4 @@
-# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.11/internal/pkg/config/config.example.yaml
+# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.12/internal/pkg/config/config.example.yaml
 
 log:
   # The level of logging, can be trace, debug, info, warn, error, fatal
@@ -37,8 +37,8 @@ runner:
   # The interval for fetching the job from the Gitea instance.
   fetch_interval: '${GITEA_RUNNER_FETCH_INTERVAL:-2s}'
   # The labels of a runner are used to determine which jobs the runner can run, and how to run them.
-  # Like: "macos-arm64:host" or "ubuntu-latest:docker://gitea/runner-images:ubuntu-latest"
-  # Find more images provided by Gitea at https://gitea.com/gitea/runner-images .
+  # Like: "macos-arm64:host" or "ubuntu-latest:docker://docker.gitea.com/runner-images:ubuntu-latest"
+  # Find more images provided by Gitea at https://gitea.com/docker.gitea.com/runner-images .
   # If it's empty when registering, it will ask for inputting labels.
   # If it's empty when execute `daemon`, will use labels in `.runner` file.
   labels: [ "${GITEA_RUNNER_LABELS//,/","}" ]

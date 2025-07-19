@@ -121,13 +121,14 @@ RUN --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
     OS_CODENAME="$(source /etc/os-release && echo "$VERSION_CODENAME")"
     echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $OS_CODENAME stable" > /etc/apt/sources.list.d/docker.list
     apt-get update
-    (set -x; apt-get install --no-install-recommends -y docker-ce containerd.io fuse-overlayfs)
+    (set -x; apt-get install --no-install-recommends -y docker-ce docker-compose-plugin containerd.io fuse-overlayfs)
     apt-get remove -y gnupg
     apt-get autoremove -y
 
     minimize /usr/bin/containerd* /usr/bin/ctr /usr/bin/docker* /usr/bin/runc
 
     docker --version
+    docker compose version
     runc --version
 
     # https://github.com/docker/for-linux/issues/1437#issuecomment-1293818806

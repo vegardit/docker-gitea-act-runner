@@ -84,20 +84,21 @@ echo "
 " | sudo tee /etc/buildkitd.toml
 
 builder_name="bx-$(date +%s)-$RANDOM"
-run_step "Configure buildx builder" -- docker buildx create \
+run_step "buildx builder: configure" -- docker buildx create \
   --name "$builder_name" \
   --bootstrap \
   --config /etc/buildkitd.toml \
   --driver-opt network=host `# required for buildx to access the temporary registry` \
   --driver docker-container \
   --driver-opt image=ghcr.io/dockerhub-mirror/moby__buildkit:latest
-trap 'docker buildx rm --force "$builder_name"' EXIT
+add_trap "docker buildx rm --force '$builder_name'" EXIT
+run_step "buildx builder: inspect" -- docker buildx inspect "$builder_name" --bootstrap
 
 
 #################################################
 # build the image
 #################################################
-image_name=image_repo:${tags[0]}
+image_name=$image_repo:${tags[0]}
 
 build_opts=(
   --file "image/Dockerfile"
@@ -122,13 +123,16 @@ for key in "${!image_meta[@]}"; do
 done
 
 if [[ ${build_multi_arch:-} == "true" ]]; then
-  build_opts+=(--push)
-  build_opts+=(--sbom=true) # https://docs.docker.com/build/metadata/attestations/sbom/#create-sbom-attestations
   build_opts+=(--platform "$platforms")
-  build_opts+=(--tag "$LOCAL_REGISTRY/$image_name")
+  build_opts+=(--sbom=true)  # https://docs.docker.com/build/metadata/attestations/sbom/#create-sbom-attestations
+  build_opts+=(--output "type=registry,name=${LOCAL_REGISTRY}/${image_name},registry.http=true,registry.insecure=true")
 else
   build_opts+=(--output "type=docker,load=true")
   build_opts+=(--tag "$image_name")
+fi
+
+if [[ -n ${GITHUB_TOKEN:-} ]]; then
+  build_opts+=(--secret "id=github_token,env=GITHUB_TOKEN")
 fi
 
 if [[ $OSTYPE == "cygwin" || $OSTYPE == "msys" ]]; then
@@ -143,10 +147,16 @@ run_step "Building docker image [$image_name]..." -- \
 # load image into local docker daemon for testing
 #################################################
 if [[ ${build_multi_arch:-} == "true" ]]; then
-  run_step "Load image into local daemon for testing" @@ "
-    docker pull '$LOCAL_REGISTRY/$image_name';
-    docker tag '$LOCAL_REGISTRY/$image_name' '$image_name'
-  "
+  # cannot use "regctl image copy ... " which does not support loading into docker daemon https://github.com/regclient/regclient/issues/568
+  # cannot use "docker pull '$LOCAL_REGISTRY/$image_name'" which does not support ad-hoc pulling from unsecure registries - must be allowed in docker daemon config
+  run_step "Load image into local daemon for testing" -- \
+    docker run --rm \
+      -v /var/run/docker.sock:/var/run/docker.sock \
+      --network host `# required to access the temporary registry` \
+      quay.io/skopeo/stable:latest \
+      copy --src-tls-verify=false \
+           "docker://$LOCAL_REGISTRY/$image_name" \
+           "docker-daemon:$image_name"
 fi
 
 
@@ -178,16 +188,18 @@ function regctl() {
     --network host `# required to access the temporary registry` \
     ghcr.io/regclient/regctl:latest \
     --host "reg=$LOCAL_REGISTRY,tls=disabled" \
+    --verbosity debug \
     "${@}"
 }
 
 if [[ ${DOCKER_PUSH:-} == "true" ]]; then
   for tag in "${tags[@]}"; do
-    regctl image copy --referrers "$LOCAL_REGISTRY/$image_name" "docker.io/$image_repo:$tag"
+    # cannot use "skopeo  copy ... " which does not support SBOMs https://github.com/containers/skopeo/issues/2393
+    regctl image copy --digest-tags --include-external --referrers "$LOCAL_REGISTRY/$image_name" "docker.io/$image_repo:$tag"
   done
 fi
 if [[ ${DOCKER_PUSH_GHCR:-} == "true" ]]; then
   for tag in "${tags[@]}"; do
-    regctl image copy --referrers "$LOCAL_REGISTRY/$image_name" "ghcr.io/$image_repo:$tag"
+    regctl image copy --digest-tags --include-external --referrers "$LOCAL_REGISTRY/$image_name" "ghcr.io/$image_repo:$tag"
   done
 fi

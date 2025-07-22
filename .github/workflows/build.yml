@@ -6,28 +6,34 @@
 # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 name: Build
 
-on:
+on:  # https://docs.github.com/en/actions/reference/events-that-trigger-workflows
+  schedule:
+    # https://docs.github.com/en/actions/reference/choosing-when-your-workflow-runs/events-that-trigger-workflows
+    - cron: '0 17 * * 3'
   push:
     branches-ignore:  # build all branches except:
     - 'dependabot/**'  # prevent GHA triggered twice (once for commit to the branch and once for opening/syncing the PR)
     tags-ignore:  # don't build tags
     - '**'
     paths-ignore:
+    - '**/*.adoc'
     - '**/*.md'
+    - '.act*'
     - '.editorconfig'
     - '.git*'
     - '.github/*.yml'
+    - '.github/ISSUE_TEMPLATE/*'
     - '.github/workflows/stale.yml'
   pull_request:
     paths-ignore:
+    - '**/*.adoc'
     - '**/*.md'
+    - '.act*'
     - '.editorconfig'
     - '.git*'
+    - '.github/ISSUE_TEMPLATE/*'
     - '.github/*.yml'
     - '.github/workflows/stale.yml'
-  schedule:
-    # https://docs.github.com/en/actions/reference/choosing-when-your-workflow-runs/events-that-trigger-workflows
-    - cron: '0 17 * * 3'
   workflow_dispatch:
     # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch
     inputs:
@@ -36,13 +42,16 @@ on:
         default: latest
         description: Version of the Gitea Act Runner, see https://dl.gitea.com/act_runner/ 
 
+
 defaults:
   run:
     shell: bash
 
+
 env:
   DOCKER_REPO_NAME: gitea-act-runner
   TRIVY_CACHE_DIR: ~/.trivy/cache
+
 
 jobs:
 
@@ -50,7 +59,7 @@ jobs:
   build:
   ###########################################################
     runs-on: ubuntu-latest  # https://github.com/actions/runner-images#available-images
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     permissions:
       packages: write
@@ -82,7 +91,7 @@ jobs:
     - name: "Show: GitHub context"
       env:
         GITHUB_CONTEXT: ${{ toJSON(github) }}
-      run: echo $GITHUB_CONTEXT
+      run: printf '%s' "$GITHUB_CONTEXT" | python -m json.tool
 
 
     - name: "Show: environment variables"
@@ -165,8 +174,10 @@ jobs:
         DOCKER_IMAGE_REPO: ${{ github.repository_owner }}/${{ env.DOCKER_REPO_NAME }}
         DOCKER_IMAGE_TAG_PREFIX: ${{ matrix.DOCKER_IMAGE_TAG_PREFIX }}
         DOCKER_IMAGE_FLAVOR: ${{ matrix.DOCKER_IMAGE_FLAVOR }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         TRIVY_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        set -eu
         if [[ -n "${{ inputs.VERSION }}" ]]; then
           export GITEA_ACT_RUNNER_VERSION="${{ inputs.VERSION }}"
         else
@@ -189,7 +200,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}
       cancel-in-progress: false
-      
+
     permissions:
       packages: write
 

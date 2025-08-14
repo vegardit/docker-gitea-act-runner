@@ -63,7 +63,7 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
   echo "#################################################"
   echo "Installing required packages..."
   echo "#################################################"
-  apt-get install --no-install-recommends -y binutils ca-certificates curl sudo tini
+  apt-get install --no-install-recommends -y adduser binutils ca-certificates curl sudo tini
 
   if [[ $UPX_COMPRESS == "true" ]]; then
     echo "#################################################"
@@ -157,22 +157,21 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
       # https://docs.docker.com/engine/security/rootless/
       (set -x; apt-get install --no-install-recommends -y \
         dbus-user-session \
-        `# docker-ce-rootless-extras` \
+        docker-ce-rootless-extras \
         kmod \
         iproute2 \
         slirp4netns \
         uidmap)
 
-      # workaround for "[rootlesskit:parent] error: failed to start the child: fork/exec /proc/self/exe: operation not permitted"
-      # see https://github.com/rootless-containers/rootlesskit/issues/425
-      (set -x; apt-get install --no-install-recommends -y docker-ce-rootless-extras=5:25.0.3-1~debian.12~bookworm --allow-downgrades)
-
       (set -x; rootlesskit --version)
-      (set -x; runuser -u act -g act -- /usr/bin/dockerd-rootless-setuptool.sh install --skip-iptables)
 
       # workaround "failed to load plugin io.containerd.internal.v1.opt  error="mkdir /opt/containerd: permission denied"
       mkdir /opt/containerd
       chown act:act /opt/containerd
+
+      # set up subuid/subgid for act user
+      echo 'act:100000:65536' | tee -a /etc/subuid
+      echo 'act:100000:65536' | tee -a /etc/subgid
     else
       docker_version=$(docker --version | cut -d ' ' -f3 | cut -d ',' -f1)
       curl "https://raw.githubusercontent.com/moby/moby/v${docker_version}/hack/dind" -o /usr/local/bin/dind-hack
@@ -253,7 +252,7 @@ USER act
 
 VOLUME /data
 
-# only for dind relevant
+# Docker data volume - only used for dind mode (not dind-rootless which stores data in $HOME/.docker)
 VOLUME /var/lib/docker
 
 ENTRYPOINT ["/usr/bin/tini", "--"]

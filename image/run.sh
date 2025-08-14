@@ -40,6 +40,25 @@ fi
 if [[ -f /usr/bin/dockerd-rootless.sh ]]; then
   export DOCKER_MODE=dind-rootless
   log INFO "Starting Docker engine (rootless)..."
+
+  # Detect whether this container allows RootlessKit to start.
+  # Rootless BuildKit/Rootless Docker need seccomp & apparmor unconfined
+  # (or --privileged) and often systempaths=unconfined for /proc masks.
+  # See: BuildKit rootless docs.  (seccomp/appamor/systempaths rationale)
+  if [[ -r /proc/$$/status ]]; then
+    seccomp=$(awk '/^Seccomp:/{print $2}' /proc/$$/status 2>/dev/null)
+  fi
+  if [[ -r /proc/$$/attr/current ]]; then
+    apparmor=$(< /proc/$$/attr/current)
+  fi
+  # Seccomp: 0 == unconfined; 2 == filtered by default profile
+  if [[ "${seccomp:-}" != "0" || "${apparmor:-}" != "unconfined" ]]; then
+    log WARN "Rootless Docker/BuildKit may be blocked by container sandbox (seccomp=${seccomp:-unknown} apparmor=${apparmor:-unknown})."
+    log WARN "Run with: --security-opt seccomp=unconfined --security-opt apparmor=unconfined"
+    log WARN "Optionally add: --security-opt systempaths=unconfined (to relax /proc masking)."
+    log WARN "Compose: security_opt: ['seccomp:unconfined','apparmor:unconfined','systempaths=unconfined']"
+  fi
+
   export DOCKER_HOST=unix://$HOME/.docker/run/docker.sock
   if [[ ! -f "$HOME/.config/docker/daemon.json" ]]; then
     # workaround for "Not using native diff for overlay2, this may cause degraded performance for building images: running in a user namespace  storage-driver=overlay2"
@@ -56,7 +75,7 @@ if [[ -f /usr/bin/dockerd-rootless.sh ]]; then
   while ! docker stats --no-stream &>/dev/null; do
     log INFO "Waiting for Docker engine to start..."
     sleep 2
-    tail -n 1 /data/.docker/docker.log
+    tail -n 1 "$HOME/.docker/docker.log"
   done
   echo "==========================================================="
   docker info

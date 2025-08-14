@@ -50,7 +50,7 @@ Running from the command line:
        -e GITEA_INSTANCE_URL=https://gitea.example.com \
        -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
        --name gitea_act_runner \
-       --privileged
+       --privileged \
        vegardit/gitea-act-runner:dind-latest
    ```
 
@@ -60,7 +60,9 @@ Running from the command line:
        -e GITEA_INSTANCE_URL=https://gitea.example.com \
        -e GITEA_RUNNER_REGISTRATION_TOKEN=<INSERT_TOKEN_HERE> \
        --name gitea_act_runner \
-       --privileged
+       --security-opt seccomp=unconfined \
+       --security-opt apparmor=unconfined \
+       --security-opt systempaths=unconfined \
        vegardit/gitea-act-runner:dind-rootless-latest
    ```
 
@@ -97,7 +99,7 @@ Example `docker-compose.yml`:
 
      gitea_act_runner:
        image: vegardit/gitea-act-runner:dind-latest
-       #image: ghcr.io/vegarditgitea-act-runner:dind-latest
+       #image: ghcr.io/vegardit/gitea-act-runner:dind-latest
        privileged: true
        restart: always
        volumes:
@@ -110,6 +112,145 @@ Example `docker-compose.yml`:
          # or: GITEA_RUNNER_REGISTRATION_TOKEN: '<INSERT_TOKEN_HERE>'
    ```
 
+- Docker-in-Docker rootless approach
+   ```yaml
+   # https://docs.docker.com/compose/compose-file/
+
+   services:
+
+     gitea_act_runner:
+       image: vegardit/gitea-act-runner:dind-rootless-latest
+       #image: ghcr.io/vegardit/gitea-act-runner:dind-rootless-latest
+       restart: always
+       security_opt:
+         - seccomp:unconfined
+         - apparmor:unconfined
+         - systempaths=unconfined
+       volumes:
+         - /my/path/to/data/dir:/data:rw # the config file is located at /data/.runner and needs to survive container restarts
+       environment:
+         TZ: "Europe/Berlin"
+         # config parameters for initial runner registration:
+         GITEA_INSTANCE_URL: 'https://gitea.example.com' # required
+         GITEA_RUNNER_REGISTRATION_TOKEN_FILE: 'path/to/file' # one-time registration token, only required on first container start
+         # or: GITEA_RUNNER_REGISTRATION_TOKEN: '<INSERT_TOKEN_HERE>'
+   ```
+
+### Kubernetes Deployment
+
+Example deployment for Kubernetes:
+
+- Docker-out-of-Docker approach (requires access to host Docker socket)
+   ```yaml
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: gitea-act-runner
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: gitea-act-runner
+     template:
+       metadata:
+         labels:
+           app: gitea-act-runner
+       spec:
+         containers:
+         - name: runner
+           image: vegardit/gitea-act-runner:latest
+           env:
+           - name: GITEA_INSTANCE_URL
+             value: "https://gitea.example.com"
+           - name: GITEA_RUNNER_REGISTRATION_TOKEN
+             valueFrom:
+               secretKeyRef:
+                 name: gitea-runner-secret
+                 key: registration-token
+           volumeMounts:
+           - name: docker-sock
+             mountPath: /var/run/docker.sock
+           - name: data
+             mountPath: /data
+         volumes:
+         - name: docker-sock
+           hostPath:
+             path: /var/run/docker.sock
+             type: Socket
+         - name: data
+           persistentVolumeClaim:
+             claimName: gitea-runner-pvc
+   ---
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: gitea-runner-secret
+   type: Opaque
+   stringData:
+     registration-token: "<INSERT_TOKEN_HERE>"
+   ---
+   apiVersion: v1
+   kind: PersistentVolumeClaim
+   metadata:
+     name: gitea-runner-pvc
+   spec:
+     accessModes:
+     - ReadWriteOnce
+     resources:
+       requests:
+         storage: 10Gi
+   ```
+
+- Docker-in-Docker approach (more secure, doesn't require host Docker access)
+   ```yaml
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: gitea-act-runner-dind
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: gitea-act-runner-dind
+     template:
+       metadata:
+         labels:
+           app: gitea-act-runner-dind
+       spec:
+         containers:
+         - name: runner
+           image: vegardit/gitea-act-runner:dind-latest
+           securityContext:
+             privileged: true
+           env:
+           - name: GITEA_INSTANCE_URL
+             value: "https://gitea.example.com"
+           - name: GITEA_RUNNER_REGISTRATION_TOKEN
+             valueFrom:
+               secretKeyRef:
+                 name: gitea-runner-secret
+                 key: registration-token
+           volumeMounts:
+           - name: data
+             mountPath: /data
+           - name: docker-storage
+             mountPath: /var/lib/docker
+         volumes:
+         - name: data
+           persistentVolumeClaim:
+             claimName: gitea-runner-data-pvc
+         - name: docker-storage
+           emptyDir: {}
+   ```
+
+**Notes for Kubernetes deployments:**
+- For production, prefer the **DinD (rootful)** approach over DooD because it avoids exposing the host Docker socket and provides better isolation from the host.
+- **DinD-rootless** is generally **not recommended** in Kubernetes because:
+  - It often requires permissive settings (`seccompProfile: Unconfined`, AppArmor `unconfined`) that many clusters disallow under their Pod Security Standards.
+  - It provides limited additional security at the pod boundary compared to rootful DinD, while still needing relaxed sandboxing.
+  - It has practical limitations (user-mode networking via `slirp4netns`, port publishing quirks, performance trade-offs, storage driver constraints such as `fuse-overlayfs`).
+  - If you need "rootless" semantics, consider using **native Kubernetes Jobs** (or a Kubernetes-native runner/executor) instead of running a Docker daemon inside the pod.
+
 ### Additional environment variables
 
 The following environment variables can be specified to further configure the service.
@@ -117,7 +258,7 @@ The following environment variables can be specified to further configure the se
 #### Runner registration:
 Name|Default Value|Description
 ----|-------------|-----------
-GITEA_INSTANCE_INSECURE|`false`|It `true` don't verify the TLS certificate of the Gitea instance
+GITEA_INSTANCE_INSECURE|`false`|If `true` don't verify the TLS certificate of the Gitea instance
 GITEA_RUNNER_NAME|`<empty>`|If not specified the container's hostname is used
 GITEA_RUNNER_REGISTRATION_FILE|`/data/.runner`|The JSON file that holds the result from the runner registration with the Gitea instance
 GITEA_RUNNER_REGISTRATION_TIMEOUT|`30`|In case of failure, registration is retried until this timeout in seconds is reached
@@ -138,7 +279,7 @@ The following environment variables are referenced in the `/opt/config.template.
 
 Name|Default Value|Description
 ----|-------------|-----------
-GITEA_RUNNER_LABELS|`<empty>`|Comma-separated list of labels in the format of `label[:schema[:args]]`.<br>If not specified the following labels are used<ol><li>`ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-latest`<li>`ubuntu-24.04:docker://ghcr.io/catthehacker/ubuntu:act-24.04<li>`ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04`<li>`ubuntu-20.04:docker://ghcr.io/catthehacker/ubuntu:act-20.04`</ol>
+GITEA_RUNNER_LABELS|`<empty>`|Comma-separated list of labels in the format of `label[:schema[:args]]`.<br>If not specified the following labels are used<ol><li>`ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-latest`<li>`ubuntu-24.04:docker://ghcr.io/catthehacker/ubuntu:act-24.04`<li>`ubuntu-22.04:docker://ghcr.io/catthehacker/ubuntu:act-22.04`<li>`ubuntu-20.04:docker://ghcr.io/catthehacker/ubuntu:act-20.04`</ol>
 GITEA_RUNNER_LOG_LEVEL|`info`|The level of logging, can be trace, debug, info, warn, error, fatal
 GITEA_RUNNER_ENV_FILE|`/data/.env`|Extra environment variables to run jobs from a file
 GITEA_RUNNER_FETCH_TIMEOUT|`5s`|The timeout for fetching the job from the Gitea instance

@@ -143,6 +143,14 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
     docker buildx version
     runc --version
 
+    if [[ -f /etc/init.d/docker ]] && grep -q "ulimit -Hn" /etc/init.d/docker; then
+      # Fix for Docker 25.0.0+ ulimit issue in containers
+      # See: https://github.com/docker/for-linux/issues/1480
+      #      https://github.com/docker/cli/issues/4807
+      # Replace 'ulimit -Hn 524288' with 'ulimit -n 524288' to avoid hard limit errors
+      sed -i 's/ulimit -Hn/ulimit -n/g' /etc/init.d/docker
+    fi
+
     # https://github.com/docker/for-linux/issues/1437#issuecomment-1293818806
     update-alternatives --set iptables /usr/sbin/iptables-legacy
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy

@@ -31,8 +31,8 @@ on:  # https://docs.github.com/en/actions/reference/events-that-trigger-workflow
     - '.act*'
     - '.editorconfig'
     - '.git*'
-    - '.github/ISSUE_TEMPLATE/*'
     - '.github/*.yml'
+    - '.github/ISSUE_TEMPLATE/*'
     - '.github/workflows/stale.yml'
   workflow_dispatch:
     # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch

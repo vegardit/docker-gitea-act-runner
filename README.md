@@ -284,6 +284,7 @@ GITEA_RUNNER_LOG_LEVEL|`info`|The level of logging, can be trace, debug, info, w
 GITEA_RUNNER_ENV_FILE|`/data/.env`|Extra environment variables to run jobs from a file
 GITEA_RUNNER_FETCH_TIMEOUT|`5s`|The timeout for fetching the job from the Gitea instance
 GITEA_RUNNER_FETCH_INTERVAL|`2s`|The interval for fetching the job from the Gitea instance
+GITEA_RUNNER_GITHUB_MIRROR|`<empty>`| Base URL to use instead of https://github.com when fetching GitHub Actions.
 GITEA_RUNNER_MAX_PARALLEL_JOBS|`1`|Maximum number of concurrently executed jobs
 GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST|`<empty>`|If empty, the available docker host is located automatically. If set to `-`, the available docker host is located automatically, but the docker host won't be mounted to the job containers. If it's any other value, the specified docker host will be used.
 GITEA_RUNNER_JOB_CONTAINER_NETWORK|`bridge`|Docker network to use with job containers. Can be `bridge`, `host`, `none`, or the name of a custom network

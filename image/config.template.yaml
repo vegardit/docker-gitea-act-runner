@@ -1,4 +1,4 @@
-# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.12/internal/pkg/config/config.example.yaml
+# based on https://gitea.com/gitea/act_runner/src/tag/v0.2.13/internal/pkg/config/config.example.yaml
 
 log:
   # The level of logging, can be trace, debug, info, warn, error, fatal
@@ -36,6 +36,11 @@ runner:
   fetch_timeout: '${GITEA_RUNNER_FETCH_TIMEOUT:-5s}'
   # The interval for fetching the job from the Gitea instance.
   fetch_interval: '${GITEA_RUNNER_FETCH_INTERVAL:-2s}'
+  # The github_mirror of a runner is used to specify the mirror address of the github that pulls the action repository.
+  # It works when something like `uses: actions/checkout@v4` is used and DEFAULT_ACTIONS_URL is set to github,
+  # and github_mirror is not empty. In this case,
+  # it replaces https://github.com with the value here, which is useful for some special network environments.
+  github_mirror: '${GITEA_RUNNER_GITHUB_MIRROR:-}'
   # The labels of a runner are used to determine which jobs the runner can run, and how to run them.
   # Like: "macos-arm64:host" or "ubuntu-latest:docker://docker.gitea.com/runner-images:ubuntu-latest"
   # Find more images provided by Gitea at https://gitea.com/docker.gitea.com/runner-images .

@@ -63,6 +63,9 @@ if [[ ! -s ${GITEA_RUNNER_REGISTRATION_FILE:-.runner} ]]; then
   log INFO "  GITEA_RUNNER_NAME=$GITEA_RUNNER_NAME"
   log INFO "  GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_RUNNER_REGISTRATION_TOKEN//?/*}"
   log INFO "  GITEA_RUNNER_LABELS=$GITEA_RUNNER_LABELS"
+  if [[ $GITEA_RUNNER_EPHEMERAL == "true" || $GITEA_RUNNER_EPHEMERAL == "1" ]]; then
+    log INFO "  GITEA_RUNNER_EPHEMERAL=$GITEA_RUNNER_EPHEMERAL (runner will exit after completing one job)"
+  fi
   wait_until=$(( $(date +%s) + GITEA_RUNNER_REGISTRATION_TIMEOUT ))
   while true; do
     if act_runner register \
@@ -71,6 +74,7 @@ if [[ ! -s ${GITEA_RUNNER_REGISTRATION_FILE:-.runner} ]]; then
       --name     "$GITEA_RUNNER_NAME" \
       --labels   "$GITEA_RUNNER_LABELS" \
       --config "$effective_config_file" \
+      "$([[ $GITEA_RUNNER_EPHEMERAL == "true" || $GITEA_RUNNER_EPHEMERAL == "1" ]] && echo --ephemeral)" \
       --no-interactive; then
       break;
     fi

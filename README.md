@@ -260,6 +260,7 @@ Name|Default Value|Description
 ----|-------------|-----------
 GITEA_INSTANCE_INSECURE|`false`|If `true` don't verify the TLS certificate of the Gitea instance
 GITEA_RUNNER_NAME|`<empty>`|If not specified the container's hostname is used
+GITEA_RUNNER_EPHEMERAL|`false`|If `true` or `1`, the runner will exit after completing a single job
 GITEA_RUNNER_REGISTRATION_FILE|`/data/.runner`|The JSON file that holds the result from the runner registration with the Gitea instance
 GITEA_RUNNER_REGISTRATION_TIMEOUT|`30`|In case of failure, registration is retried until this timeout in seconds is reached
 GITEA_RUNNER_REGISTRATION_RETRY_INTERVAL|`5`|Wait period in seconds between registration retries

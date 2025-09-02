@@ -68,14 +68,18 @@ if [[ ! -s ${GITEA_RUNNER_REGISTRATION_FILE:-.runner} ]]; then
   fi
   wait_until=$(( $(date +%s) + GITEA_RUNNER_REGISTRATION_TIMEOUT ))
   while true; do
-    if act_runner register \
-      --instance "$GITEA_INSTANCE_URL" \
-      --token    "$GITEA_RUNNER_REGISTRATION_TOKEN" \
-      --name     "$GITEA_RUNNER_NAME" \
-      --labels   "$GITEA_RUNNER_LABELS" \
-      --config "$effective_config_file" \
-      "$([[ $GITEA_RUNNER_EPHEMERAL == "true" || $GITEA_RUNNER_EPHEMERAL == "1" ]] && echo --ephemeral)" \
-      --no-interactive; then
+    register_args=(
+      --instance "$GITEA_INSTANCE_URL"
+      --token    "$GITEA_RUNNER_REGISTRATION_TOKEN"
+      --name     "$GITEA_RUNNER_NAME"
+      --labels   "$GITEA_RUNNER_LABELS"
+      --config   "$effective_config_file"
+      --no-interactive
+    )
+    if [[ $GITEA_RUNNER_EPHEMERAL == "true" || $GITEA_RUNNER_EPHEMERAL == "1" ]]; then
+      register_args+=(--ephemeral)
+    fi
+    if act_runner register "${register_args[@]}"; then
       break;
     fi
     if [ "$(date +%s)" -ge $wait_until ]; then

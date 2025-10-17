@@ -30,7 +30,7 @@ We use GitHub Issues to track bugs and feature requests. When submitting an issu
 
 Before making substantial contributions:
 1. **Discuss Changes**: Please file an issue first to discuss your proposed changes with the team. This helps ensure your contribution aligns with the project’s goals.
-2. **Follow Best Practices**: Adhere to the guidelines and ensure your code meets the project’s standards (see [Code Guidelines](#code-guidelines)).
+2. **Follow Best Practices**: Adhere to the guidelines and ensure your code meets the project’s standards.
 
 When submitting a pull request:
 - Ensure your changes are well-documented.

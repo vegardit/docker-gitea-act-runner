@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-ArtifactOfProjectHomePage: https://github.com/vegardit/docker-gitea-act-runner
 #
-# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
 name: Build
 
-on:  # https://docs.github.com/en/actions/reference/events-that-trigger-workflows
+on:  # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows
   schedule:
-    # https://docs.github.com/en/actions/reference/choosing-when-your-workflow-runs/events-that-trigger-workflows
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
     - cron: '0 17 * * 3'
   push:
     branches-ignore:  # build all branches except:
@@ -35,7 +35,7 @@ on:  # https://docs.github.com/en/actions/reference/events-that-trigger-workflow
     - '.github/ISSUE_TEMPLATE/*'
     - '.github/workflows/stale.yml'
   workflow_dispatch:
-    # https://docs.github.com/en/actions/reference/events-that-trigger-workflows#workflow_dispatch
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     inputs:
       VERSION:
         type: string

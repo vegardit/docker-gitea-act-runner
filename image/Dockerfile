@@ -182,7 +182,9 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
       echo 'act:100000:65536' | tee -a /etc/subgid
     else
       docker_version=$(docker --version | cut -d ' ' -f3 | cut -d ',' -f1)
-      curl "https://raw.githubusercontent.com/moby/moby/v${docker_version}/hack/dind" -o /usr/local/bin/dind-hack
+      dind_hack_url="https://raw.githubusercontent.com/moby/moby/v${docker_version}/hack/dind"
+      echo "Downloading [$dind_hack_url]..."
+      curl "$dind_hack_url" -o /usr/local/bin/dind-hack
       chmod +x /usr/local/bin/dind-hack
       usermod -aG docker act
     fi

@@ -183,6 +183,16 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
     else
       docker_version=$(docker --version | cut -d ' ' -f3 | cut -d ',' -f1)
       dind_hack_url="https://raw.githubusercontent.com/moby/moby/v${docker_version}/hack/dind"
+      # Check if it exists; if not, try the new prefix (docker-vX.Y.Z)
+      if ! curl -o /dev/null -f -s "$dind_hack_url"; then
+        alt_url="https://raw.githubusercontent.com/moby/moby/docker-v${docker_version}/hack/dind"
+        if curl -o /dev/null -f -s "$alt_url"; then
+          dind_hack_url="$alt_url"
+        else
+          echo "❌ Could not find dind hack script for Docker version ${docker_version}" >&2
+          exit 1
+        fi
+      fi
       echo "Downloading [$dind_hack_url]..."
       curl "$dind_hack_url" -o /usr/local/bin/dind-hack
       chmod +x /usr/local/bin/dind-hack

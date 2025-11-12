@@ -74,9 +74,7 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
        auth=(-H "Authorization: Bearer $(cat /run/secrets/github_token)")
     fi
     mkdir /opt/upx
-    # https://api.github.com/repos/upx/upx/releases/latest -> points to 5.0.1 which crashes with "3972 Segmentation fault (core dumped) docker --version"
-    # https://api.github.com/repos/upx/upx/releases/154915740 -> points to 4.2.4
-    upx_download_url=$(curl "${auth[@]:-}" "https://api.github.com/repos/upx/upx/releases/154915740" | grep browser_download_url | grep "${upx_arch}_linux.tar.xz" | cut "-d\"" -f4)
+    upx_download_url=$(curl "${auth[@]:-}" "https://api.github.com/repos/upx/upx/releases/latest" | grep browser_download_url | grep "${upx_arch}_linux.tar.xz" | cut "-d\"" -f4)
 
     echo "Downloading [$upx_download_url]..."
     curl "$upx_download_url" | tar Jxv -C /opt/upx --strip-components=1

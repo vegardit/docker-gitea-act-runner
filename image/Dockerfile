@@ -166,6 +166,7 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
         docker-ce-rootless-extras \
         kmod \
         iproute2 \
+        procps \
         slirp4netns \
         uidmap)
 

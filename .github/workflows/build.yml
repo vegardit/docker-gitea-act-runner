@@ -120,7 +120,7 @@ jobs:
 
 
     - name: Cache trivy cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ${{ env.TRIVY_CACHE_DIR }}
         # https://github.com/actions/cache/issues/342#issuecomment-673371329

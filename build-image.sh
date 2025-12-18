@@ -163,8 +163,7 @@ fi
 #################################################
 # perform security audit
 #################################################
-# TODO see https://gitea.com/gitea/act_runner/issues/513
-if [[ ${DOCKER_AUDIT_IMAGE:-1} == "1" && $GITEA_ACT_RUNNER_VERSION == "nightly" ]]; then
+if [[ ${DOCKER_AUDIT_IMAGE:-1} == "1" ]]; then
   run_step "Auditing docker image [$image_name]" -- \
     bash "$shared_lib/cmd/audit-image.sh" "$image_name"
 fi

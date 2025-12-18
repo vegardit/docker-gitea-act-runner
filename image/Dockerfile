@@ -26,7 +26,7 @@ SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 ARG INSTALL_SUPPORT_TOOLS=0
 ARG BASE_LAYER_CACHE_KEY
 
-ARG UPX_COMPRESS=true
+ARG UPX_COMPRESS=false
 
 # dood|dind|dind-rootless
 ARG FLAVOR

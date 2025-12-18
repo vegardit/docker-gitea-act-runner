@@ -216,6 +216,9 @@ ENV \
   #
   GITEA_RUNNER_NAME='' \
   GITEA_RUNNER_LABELS='' \
+  #
+  # https://github.com/catthehacker/docker_images#images-available
+  # https://hub.docker.com/r/catthehacker/ubuntu/tags?name=act-
   GITEA_RUNNER_LABELS_DEFAULT='\
 ubuntu-latest:docker://ghcr.io/catthehacker/ubuntu:act-latest,\
 ubuntu-24.04:docker://ghcr.io/catthehacker/ubuntu:act-24.04,\

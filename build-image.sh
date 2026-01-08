@@ -100,6 +100,7 @@ run_step "buildx builder: inspect" -- docker buildx inspect "$builder_name" --bo
 #################################################
 image_name=$image_repo:${tags[0]}
 
+# shellcheck disable=SC2154  # base_layer_cache_key is referenced but not assigned
 build_opts=(
   --file "image/Dockerfile"
   --builder "$builder_name"

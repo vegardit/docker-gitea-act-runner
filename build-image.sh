@@ -35,7 +35,7 @@ declare -A image_meta=(
 # resolve gitea act runner version
 #################################################
 case $gitea_act_runner_version in
-  latest) gitea_act_runner_effective_version=$(curl https://gitea.com/gitea/act_runner/releases.rss | grep -oP "releases/tag/v\K\d\.\d\.\d\d?" | head -n 1) ;;
+  latest) gitea_act_runner_effective_version=$(curl -sSf 'https://gitea.com/api/v1/repos/gitea/act_runner/releases?draft=false&pre-release=false&limit=1' | jq -r '.[0].tag_name | ltrimstr("v")') ;;
   *)      gitea_act_runner_effective_version=$gitea_act_runner_version ;;
 esac
 

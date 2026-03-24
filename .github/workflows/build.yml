@@ -53,6 +53,9 @@ env:
   TRIVY_CACHE_DIR: ~/.trivy/cache
 
 
+permissions:  # added using https://github.com/step-security/secure-repo
+  contents: read
+
 jobs:
 
   ###########################################################
@@ -88,6 +91,11 @@ jobs:
       fail-fast: true
 
     steps:
+    - name: Harden the runner (Audit all outbound calls)
+      uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+      with:
+        egress-policy: audit
+
     - name: "Show: GitHub context"
       env:
         GITHUB_CONTEXT: ${{ toJSON(github) }}
@@ -98,12 +106,16 @@ jobs:
       run: env | sort
 
 
+    - name: "Show: Bash version"
+      run: bash --version
+
+
     - name: Git Checkout
-      uses: actions/checkout@v6  # https://github.com/actions/checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
 
     - name: Run the sh-checker
-      uses: luizm/action-sh-checker@master  # https://github.com/marketplace/actions/sh-checker
+      uses: luizm/action-sh-checker@883217215b11c1fabbf00eb1a9a041f62d74c744 # master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SHFMT_OPTS: --simplify --keep-padding
@@ -114,13 +126,13 @@ jobs:
 
 
     - name: Check Dockerfile
-      uses: hadolint/hadolint-action@v3.3.0
+      uses: hadolint/hadolint-action@2332a7b74a6de0dda2e2221d575162eba76ba5e5 # v3.3.0
       with:
         dockerfile: image/Dockerfile
 
 
     - name: Cache trivy cache
-      uses: actions/cache@v5
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
       with:
         path: ${{ env.TRIVY_CACHE_DIR }}
         # https://github.com/actions/cache/issues/342#issuecomment-673371329
@@ -130,7 +142,7 @@ jobs:
 
 
     - name: Configure fast APT repository mirror
-      uses: vegardit/fast-apt-mirror.sh@v1
+      uses: vegardit/fast-apt-mirror.sh@29a5ef3401107220fc3c32a0c659b6a1211f9e0f # v1
 
 
     - name: Install dos2unix
@@ -153,7 +165,7 @@ jobs:
 
     - name: Login to docker.io
       if: ${{ env.DOCKER_PUSH }}
-      uses: docker/login-action@v3
+      uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
       with:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -161,7 +173,7 @@ jobs:
 
     - name: Login to ghcr.io
       if: ${{ env.DOCKER_PUSH_GHCR }}
-      uses: docker/login-action@v3
+      uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -205,8 +217,13 @@ jobs:
       packages: write
 
     steps:
+    - name: Harden the runner (Audit all outbound calls)
+      uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+      with:
+        egress-policy: audit
+
     - name: Delete untagged images
-      uses: dataaxiom/ghcr-cleanup-action@v1
+      uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
       with:
         package: ${{ env.DOCKER_REPO_NAME }}
         delete-untagged: true

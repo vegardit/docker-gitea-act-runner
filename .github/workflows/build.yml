@@ -50,6 +50,7 @@ defaults:
 
 env:
   DOCKER_REPO_NAME: gitea-act-runner
+  DOCKER_AUDIT_IMAGE: 0
   TRIVY_CACHE_DIR: ~/.trivy/cache
 
 

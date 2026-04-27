@@ -143,7 +143,7 @@ jobs:
 
 
     - name: Configure fast APT repository mirror
-      uses: vegardit/fast-apt-mirror.sh@776a8b231db309f0cd277d8be795af0de4a0a350 # v1
+      uses: vegardit/fast-apt-mirror.sh@c02f624f2c4108687b16f980a2c9e10d82bdace6 # v1
 
 
     - name: Install dos2unix

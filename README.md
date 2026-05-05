@@ -285,6 +285,11 @@ GITEA_RUNNER_LOG_LEVEL|`info`|The level of logging, can be trace, debug, info, w
 GITEA_RUNNER_ENV_FILE|`/data/.env`|Extra environment variables to run jobs from a file
 GITEA_RUNNER_FETCH_TIMEOUT|`5s`|The timeout for fetching the job from the Gitea instance
 GITEA_RUNNER_FETCH_INTERVAL|`2s`|The interval for fetching the job from the Gitea instance
+GITEA_RUNNER_FETCH_INTERVAL_MAX|`2s`|The maximum interval for fetching jobs when the runner backs off while idle. Set to `0` or the same value as `GITEA_RUNNER_FETCH_INTERVAL` to disable backoff
+GITEA_RUNNER_LOG_REPORT_INTERVAL|`5s`|The base interval for sending buffered job logs to the Gitea instance
+GITEA_RUNNER_LOG_MAX_LATENCY|`3s`|The maximum time a buffered log line can wait before it is sent. Must be less than `GITEA_RUNNER_LOG_REPORT_INTERVAL` to have an effect
+GITEA_RUNNER_BATCH_SIZE|`100`|Flush job logs immediately when the buffer reaches this number of rows
+GITEA_RUNNER_STATE_REPORT_INTERVAL|`5s`|The interval for reporting job state to the Gitea instance
 GITEA_RUNNER_GITHUB_MIRROR|`<empty>`| Base URL to use instead of https://github.com when fetching GitHub Actions.
 GITEA_RUNNER_MAX_PARALLEL_JOBS|`1`|Maximum number of concurrently executed jobs
 GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST|`<empty>`|If empty, the available docker host is located automatically. If set to `-`, the available docker host is located automatically, but the docker host won't be mounted to the job containers. If it's any other value, the specified docker host will be used.
@@ -294,6 +299,9 @@ GITEA_RUNNER_JOB_CONTAINER_OPTIONS|`<empty>`|Additional container launch options
 GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT|`/workspace`|The parent directory of a job's working directory
 GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL|`true`|Pull docker image(s) even if already present
 GITEA_RUNNER_JOB_CONTAINER_FORCE_REBUILD|`false`|Rebuild docker image(s) even if already present
+GITEA_RUNNER_JOB_REQUIRE_DOCKER|`false`|Always require a reachable Docker daemon, even if the runner does not require one for the selected job
+GITEA_RUNNER_JOB_CONTAINER_TIMEOUT|`0s`|Timeout for waiting until the Docker daemon is reachable when Docker is required
+GITEA_RUNNER_JOB_CONTAINER_BIND_WORKDIR|`false`|Bind the workspace to the host filesystem instead of using Docker volumes. This is required for DinD jobs that use Docker Compose with bind mounts
 GITEA_RUNNER_JOB_TIMEOUT|`3h`|The maximum time a job can run before it is cancelled
 GITEA_RUNNER_SHUTDOWN_TIMEOUT|`0s`|The timeout for the runner to wait for running jobs to finish when shutting down
 GITEA_RUNNER_ENV_VAR_**N**_NAME|`<empty>`|Name of the **N**-th extra environment variable to be passed to Job containers, e.g. `GITEA_RUNNER_ENV_VAR_1_NAME=MY_AUTH_TOKEN`
@@ -306,9 +314,16 @@ Name|Default Value|Description
 ----|-------------|-----------
 ACT_CACHE_SERVER_ENABLED|`true`| Enable the use of an embedded or external cache server with `actions/cache` in jobs
 ACT_CACHE_SERVER_EXTERNAL_URL|`<empty>`|URL to an external cache server. If specified, Gitea Runner will use this URL as the ACTIONS_CACHE_URL instead of starting an embedded server. The URL should end with "/".
+ACT_CACHE_SERVER_EXTERNAL_SECRET|`<empty>`|Shared secret between this runner and an external `gitea-runner cache-server`. Required when `ACT_CACHE_SERVER_EXTERNAL_URL` is set
 ACT_CACHE_SERVER_DIR|`/data/cache/server`| The directory to store the cache data
 ACT_CACHE_SERVER_HOST|`<empty>`| The IP address or hostname via which the job containers can reach the cache server. Leave empty for automatic detection
 ACT_CACHE_SERVER_PORT|`0`|The TCP port of the cache server. `0` means to use a random, available port
+
+#### Metrics:
+Name|Default Value|Description
+----|-------------|-----------
+GITEA_RUNNER_METRICS_ENABLED|`false`|Enable the Prometheus metrics endpoint
+GITEA_RUNNER_METRICS_ADDR|`127.0.0.1:9101`|Listen address for the metrics HTTP server. Use an externally reachable address only when the port is protected
 
 ## <a name="license"></a>License
 

@@ -30,7 +30,7 @@ ARG UPX_COMPRESS=false
 
 # dood|dind|dind-rootless
 ARG FLAVOR
-ARG GITEA_ACT_RUNNER_VERSION
+ARG GITEA_RUNNER_VERSION
 
 # https://github.com/hadolint/hadolint/wiki/DL3008 Pin versions
 # hadolint ignore=DL3008
@@ -86,18 +86,18 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
   minimize /usr/bin/tini-static
 
   echo "#################################################"
-  echo "Downloading Gitea act runner..."
+  echo "Downloading Gitea Runner..."
   echo "#################################################"
-  if [[ $GITEA_ACT_RUNNER_VERSION == "nightly" ]]; then
-    act_runner_download_url="https://dl.gitea.com/act_runner/nightly/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${gitea_arch}"
+  if [[ $GITEA_RUNNER_VERSION == "nightly" ]]; then
+    gitea_runner_download_url="https://dl.gitea.com/gitea-runner/nightly/gitea-runner-${GITEA_RUNNER_VERSION}-linux-${gitea_arch}"
   else
-    act_runner_download_url="https://gitea.com/gitea/act_runner/releases/download/v${GITEA_ACT_RUNNER_VERSION}/act_runner-${GITEA_ACT_RUNNER_VERSION}-linux-${gitea_arch}"
+    gitea_runner_download_url="https://gitea.com/gitea/runner/releases/download/v${GITEA_RUNNER_VERSION}/act_runner-${GITEA_RUNNER_VERSION}-linux-${gitea_arch}"
   fi
-  echo "Downloading [$act_runner_download_url]..."
-  curl "$act_runner_download_url" -o /usr/local/bin/act_runner
-  chmod 755 /usr/local/bin/act_runner
-  minimize /usr/local/bin/act_runner
-  act_runner --version
+  echo "Downloading [$gitea_runner_download_url]..."
+  curl "$gitea_runner_download_url" -o /usr/local/bin/gitea-runner
+  chmod 755 /usr/local/bin/gitea-runner
+  minimize /usr/local/bin/gitea-runner
+  gitea-runner --version
 
   echo "#################################################"
   echo "Adding [act] user..."
@@ -217,6 +217,7 @@ ENV \
   GITEA_RUNNER_NAME='' \
   GITEA_RUNNER_LABELS='' \
   #
+  # https://gitea.com/gitea/runner-images
   # https://github.com/catthehacker/docker_images#images-available
   # https://hub.docker.com/r/catthehacker/ubuntu/tags?name=act-
   GITEA_RUNNER_LABELS_DEFAULT='\

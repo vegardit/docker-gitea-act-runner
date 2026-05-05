@@ -14,7 +14,7 @@ source "$shared_lib/lib/build-image-init.sh"
 #################################################
 # declare image meta
 #################################################
-gitea_act_runner_version=${GITEA_ACT_RUNNER_VERSION:-latest}
+gitea_runner_version=${GITEA_RUNNER_VERSION:-latest}
 image_repo=${DOCKER_IMAGE_REPO:-vegardit/gitea-act-runner}
 base_image=${DOCKER_BASE_IMAGE:-debian:stable-slim}
 
@@ -23,7 +23,7 @@ platforms="linux/amd64,linux/arm64/v8,linux/arm/v7"
 declare -A image_meta=(
   [authors]="Vegard IT GmbH (vegardit.com)"
   [title]="$image_repo"
-  [description]="Docker image based on debian:stable-slim to run Gitea's act_runner as a Docker container"
+  [description]="Docker image based on debian:stable-slim to run Gitea's action runner as a Docker container"
   [source]="$(git config --get remote.origin.url)"
   [revision]="$(git rev-parse --short HEAD)"
   [version]="$(git rev-parse --short HEAD)"
@@ -34,9 +34,9 @@ declare -A image_meta=(
 #################################################
 # resolve gitea act runner version
 #################################################
-case $gitea_act_runner_version in
-  latest) gitea_act_runner_effective_version=$(curl -sSf 'https://gitea.com/api/v1/repos/gitea/act_runner/releases?draft=false&pre-release=false&limit=1' | jq -r '.[0].tag_name | ltrimstr("v")') ;;
-  *)      gitea_act_runner_effective_version=$gitea_act_runner_version ;;
+case $gitea_runner_version in
+  latest) gitea_runner_effective_version=$(curl -sSf 'https://gitea.com/api/v1/repos/gitea/runner/releases?draft=false&pre-release=false&limit=1' | jq -r '.[0].tag_name | ltrimstr("v")') ;;
+  *)      gitea_runner_effective_version=$gitea_runner_version ;;
 esac
 
 
@@ -44,8 +44,8 @@ esac
 # define tags
 #################################################
 declare -a tags=()
-tags+=("${DOCKER_IMAGE_TAG_PREFIX:-}$gitea_act_runner_version")
-tags+=("${DOCKER_IMAGE_TAG_PREFIX:-}$gitea_act_runner_effective_version")
+tags+=("${DOCKER_IMAGE_TAG_PREFIX:-}$gitea_runner_version")
+tags+=("${DOCKER_IMAGE_TAG_PREFIX:-}$gitea_runner_effective_version")
 
 
 #################################################
@@ -111,7 +111,7 @@ build_opts=(
   --build-arg BASE_IMAGE="$base_image"
   --build-arg GIT_BRANCH="${GIT_BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
   --build-arg GIT_COMMIT_DATE="$(date -d "@$(git log -1 --format='%at')" --utc +'%Y-%m-%d %H:%M:%S UTC')"
-  --build-arg GITEA_ACT_RUNNER_VERSION="$gitea_act_runner_effective_version"
+  --build-arg GITEA_RUNNER_VERSION="$gitea_runner_effective_version"
   --build-arg FLAVOR="$DOCKER_IMAGE_FLAVOR"
   --build-arg INSTALL_SUPPORT_TOOLS="${INSTALL_SUPPORT_TOOLS:-0}"
 )
@@ -174,7 +174,7 @@ fi
 # test image
 #################################################
 run_step "Testing docker image [$image_name]" -- \
-  docker run --pull=never --rm "$image_name" act_runner --version
+  docker run --pull=never --rm "$image_name" gitea-runner --version
 
 
 #################################################

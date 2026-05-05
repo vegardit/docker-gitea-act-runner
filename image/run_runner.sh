@@ -30,7 +30,7 @@ if [[ -z ${GITEA_RUNNER_LABELS:-} ]]; then
   GITEA_RUNNER_LABELS=$GITEA_RUNNER_LABELS_DEFAULT
 fi
 
-effective_config_file=/tmp/gitea_act_runner_config.yml
+effective_config_file=/tmp/gitea_runner_config.yml
 rm -f "$effective_config_file"
 if [[ ${GITEA_RUNNER_LOG_EFFECTIVE_CONFIG:-false} == "true" ]]; then
   log INFO "Effective runner config [$effective_config_file]:"
@@ -79,7 +79,7 @@ if [[ ! -s ${GITEA_RUNNER_REGISTRATION_FILE:-.runner} ]]; then
     if [[ $GITEA_RUNNER_EPHEMERAL == "true" || $GITEA_RUNNER_EPHEMERAL == "1" ]]; then
       register_args+=(--ephemeral)
     fi
-    if act_runner register "${register_args[@]}"; then
+    if gitea-runner register "${register_args[@]}"; then
       break;
     fi
     if [ "$(date +%s)" -ge $wait_until ]; then
@@ -99,16 +99,16 @@ unset $(env | grep "^GITEA_" | cut -d= -f1)
 
 
 #################################################
-# run the act runner
+# run the Gitea Actions runner
 #################################################
 case $DOCKER_MODE in
   dind*)
-    act_runner daemon --config "$effective_config_file" &
-    act_runner_pid=$!
+    gitea-runner daemon --config "$effective_config_file" &
+    gitea_runner_pid=$!
 
     function shutdown_act() {
-      log INFO "Stopping act_runner..."
-      (set -x; kill -SIGTERM "$act_runner_pid" || true)
+      log INFO "Stopping gitea-runner..."
+      (set -x; kill -SIGTERM "$gitea_runner_pid" || true)
     }
 
     function shutdown_docker() {
@@ -126,8 +126,8 @@ case $DOCKER_MODE in
 
     trap "shutdown_act; shutdown_docker" INT TERM HUP QUIT
 
-    # monitoring docker engine/act_runner process status
-    while [[ -e /proc/$DOCKER_PID && -e /proc/$act_runner_pid ]]; do
+    # monitoring docker engine/gitea-runner process status
+    while [[ -e /proc/$DOCKER_PID && -e /proc/$gitea_runner_pid ]]; do
       sleep 1
     done
 
@@ -141,6 +141,6 @@ case $DOCKER_MODE in
     ;;
 
   *)
-    exec act_runner daemon --config "$effective_config_file"
+    exec gitea-runner daemon --config "$effective_config_file"
     ;;
 esac

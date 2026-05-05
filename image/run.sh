@@ -13,24 +13,25 @@ source /opt/bash-init.sh
 #################################################################
 if [[ ${1:-} == "" ]]; then
   cat <<'EOF'
-   _____ _ _                            _     _____
-  / ____(_) |                 /\       | |   |  __ \
- | |  __ _| |_ ___  __ _     /  \   ___| |_  | |__) |   _ _ __  _ __   ___ _ __
- | | |_ | | __/ _ \/ _` |   / /\ \ / __| __| |  _  / | | | '_ \| '_ \ / _ \ '__|
- | |__| | | ||  __/ (_| |  / ____ \ (__| |_  | | \ \ |_| | | | | | | |  __/ |
-  \_____|_|\__\___|\__,_| /_/    \_\___|\__| |_|  \_\__,_|_| |_|_| |_|\___|_|
+   _____ _ _               _____
+  / ____(_) |             |  __ \
+ | |  __ _| |_ ___  __ _  | |__) |   _ _ __  _ __   ___ _ __
+ | | |_ | | __/ _ \/ _` | |  _  / | | | '_ \| '_ \ / _ \ '__|
+ | |__| | | ||  __/ (_| | | | \ \ |_| | | | | | | |  __/ |
+  \_____|_|\__\___|\__,_| |_|  \_\__,_|_| |_|_| |_|\___|_|
 EOF
 
   cat /opt/build_info
   echo
 
-  log INFO "$(act_runner --version)"
+  log INFO "$(gitea-runner --version)"
   log INFO "Timezone: $(date +"%Z %z")"
   log INFO "Hostname: $(hostname -f)"
   log INFO "IP Addresses: "
   awk '/32 host/ { if(uniq[ip]++ && ip != "127.0.0.1") print " - " ip } {ip=$2}' /proc/net/fib_trie
   log INFO "Config environment variables: "
-  env | grep '^GITEA_\|^ACT_' | sort | sed 's/TOKEN=.*/TOKEN=******/g' | sed -e 's/^/ - /'
+  # Redact secret-like variable names before printing startup diagnostics.
+  env | grep '^GITEA_\|^ACT_' | sort | sed -E 's/^([^=]*(TOKEN|SECRET|PASSWORD)[^=]*=).*/\1******/I' | sed -e 's/^/ - /'
 fi
 
 

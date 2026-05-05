@@ -40,7 +40,7 @@ on:  # https://docs.github.com/en/actions/reference/workflows-and-actions/events
       VERSION:
         type: string
         default: latest
-        description: Version of the Gitea Act Runner, see https://dl.gitea.com/act_runner/ 
+        description: Version of the Gitea Actions Runner, see https://dl.gitea.com/act_runner/ 
 
 
 defaults:
@@ -73,22 +73,22 @@ jobs:
         include:
           - DOCKER_IMAGE_FLAVOR: dood
             DOCKER_IMAGE_TAG_PREFIX: ""
-            GITEA_ACT_RUNNER_VERSION: latest
+            GITEA_RUNNER_VERSION: latest
           - DOCKER_IMAGE_FLAVOR: dind
             DOCKER_IMAGE_TAG_PREFIX: dind-
-            GITEA_ACT_RUNNER_VERSION: latest
+            GITEA_RUNNER_VERSION: latest
           - DOCKER_IMAGE_FLAVOR: dind-rootless
             DOCKER_IMAGE_TAG_PREFIX: dind-rootless-
-            GITEA_ACT_RUNNER_VERSION: latest
+            GITEA_RUNNER_VERSION: latest
           - DOCKER_IMAGE_FLAVOR: dood
             DOCKER_IMAGE_TAG_PREFIX: ""
-            GITEA_ACT_RUNNER_VERSION: nightly
+            GITEA_RUNNER_VERSION: nightly
           - DOCKER_IMAGE_FLAVOR: dind
             DOCKER_IMAGE_TAG_PREFIX: dind-
-            GITEA_ACT_RUNNER_VERSION: nightly
+            GITEA_RUNNER_VERSION: nightly
           - DOCKER_IMAGE_FLAVOR: dind-rootless
             DOCKER_IMAGE_TAG_PREFIX: dind-rootless-
-            GITEA_ACT_RUNNER_VERSION: nightly
+            GITEA_RUNNER_VERSION: nightly
       fail-fast: true
 
     steps:
@@ -192,9 +192,9 @@ jobs:
       run: |
         set -eu
         if [[ -n "${{ inputs.VERSION }}" ]]; then
-          export GITEA_ACT_RUNNER_VERSION="${{ inputs.VERSION }}"
+          export GITEA_RUNNER_VERSION="${{ inputs.VERSION }}"
         else
-          export GITEA_ACT_RUNNER_VERSION="${{ matrix.GITEA_ACT_RUNNER_VERSION }}"
+          export GITEA_RUNNER_VERSION="${{ matrix.GITEA_RUNNER_VERSION }}"
         fi
         bash build-image.sh
 

@@ -50,7 +50,7 @@ runner:
   log_report_max_latency: '${GITEA_RUNNER_LOG_MAX_LATENCY:-3s}'
   # Flush logs immediately when the buffer reaches this many rows.
   # This ensures bursty output (e.g., npm install) is delivered promptly.
-  log_report_batch_size: '${GITEA_RUNNER_BATCH_SIZE:-100}'
+  log_report_batch_size: ${GITEA_RUNNER_BATCH_SIZE:-100}
   # The interval for reporting task state (step status, timing) to the Gitea instance.
   # State is also reported immediately on step transitions (start/stop).
   state_report_interval: '${GITEA_RUNNER_STATE_REPORT_INTERVAL:-5s}'

@@ -90,11 +90,21 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
   echo "#################################################"
   if [[ $GITEA_RUNNER_VERSION == "nightly" ]]; then
     gitea_runner_download_url="https://dl.gitea.com/gitea-runner/nightly/gitea-runner-${GITEA_RUNNER_VERSION}-linux-${gitea_arch}"
+    gitea_runner_download_fallback_url=""
   else
-    gitea_runner_download_url="https://gitea.com/gitea/runner/releases/download/v${GITEA_RUNNER_VERSION}/act_runner-${GITEA_RUNNER_VERSION}-linux-${gitea_arch}"
+    gitea_runner_release_url="https://gitea.com/gitea/runner/releases/download/v${GITEA_RUNNER_VERSION}"
+    gitea_runner_download_url="${gitea_runner_release_url}/gitea-runner-${GITEA_RUNNER_VERSION}-linux-${gitea_arch}"
+    # Release assets were renamed in 1.0.0; keep legacy overrides such as 0.6.1 buildable.
+    gitea_runner_download_fallback_url="${gitea_runner_release_url}/act_runner-${GITEA_RUNNER_VERSION}-linux-${gitea_arch}"
   fi
   echo "Downloading [$gitea_runner_download_url]..."
-  curl "$gitea_runner_download_url" -o /usr/local/bin/gitea-runner
+  if ! curl "$gitea_runner_download_url" -o /usr/local/bin/gitea-runner; then
+    if [[ -z $gitea_runner_download_fallback_url ]]; then
+      exit 1
+    fi
+    echo "Download failed, retrying legacy release asset [$gitea_runner_download_fallback_url]..."
+    curl "$gitea_runner_download_fallback_url" -o /usr/local/bin/gitea-runner
+  fi
   chmod 755 /usr/local/bin/gitea-runner
   minimize /usr/local/bin/gitea-runner
   gitea-runner --version

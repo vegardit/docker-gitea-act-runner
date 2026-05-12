@@ -1,7 +1,11 @@
-# Based on https://gitea.com/gitea/runner/src/tag/v0.6.1/internal/pkg/config/config.example.yaml
+# Based on https://gitea.com/gitea/runner/src/tag/v1.0.2/internal/pkg/config/config.example.yaml
 
+# Logging for the runner process itself (messages printed to stderr).
+# This does not control how workflow step output is streamed to the Gitea UI;
+# tune that with runner.log_report_* below.
 log:
-  # The level of logging, can be trace, debug, info, warn, error, fatal
+  # logrus severity: trace, debug, info, warn, error, fatal, panic.
+  # trace and debug turn on caller/file:line in log lines. Default if omitted: info.
   level: ${GITEA_RUNNER_LOG_LEVEL:-info}
 
 runner:
@@ -40,6 +44,12 @@ runner:
   # The runner uses exponential backoff when idle, increasing the interval up to this maximum.
   # Set to 0 or same as fetch_interval to disable backoff.
   fetch_interval_max: '${GITEA_RUNNER_FETCH_INTERVAL_MAX:-2s}'
+  # While idle, remove stale bind-workdir task directories older than this duration.
+  # Setting either workdir_cleanup_age or idle_cleanup_interval to 0 (or any
+  # non-positive value) disables workdir cleanup entirely.
+  workdir_cleanup_age: '${GITEA_RUNNER_WORKDIR_CLEANUP_AGE:-24h}'
+  # Cadence for the idle stale bind-workdir cleanup pass.
+  idle_cleanup_interval: '${GITEA_RUNNER_IDLE_CLEANUP_INTERVAL:-10m}'
   # The base interval for periodic log flush to the Gitea instance.
   # Logs may be sent earlier if the buffer reaches log_report_batch_size
   # or if log_report_max_latency expires after the first buffered row.
@@ -80,7 +90,7 @@ cache:
   # 0 means to use a random available port.
   port: ${ACT_CACHE_SERVER_PORT:-0}
   # The external cache server URL. Valid only when enable is true.
-  # If it's specified, gitea-runner will use this URL as the ACTIONS_CACHE_URL rather than start a server by itself.
+  # If it's specified, runner will use this URL as the ACTIONS_CACHE_URL rather than start a server by itself.
   # The URL should generally end with "/".
   # Requires external_secret below to be set to the same value on both this runner and the cache-server.
   external_server: '${ACT_CACHE_SERVER_EXTERNAL_URL:-}'
@@ -92,17 +102,19 @@ cache:
 container:
   # Specifies the network to which the container will connect.
   # Could be host, bridge or the name of a custom network.
-  # If it's empty, gitea-runner will create a network automatically.
+  # If it's empty, runner will create a network automatically.
+  # Deprecated: `network_mode` is still accepted for old configs; use `network` instead.
   network: '${GITEA_RUNNER_JOB_CONTAINER_NETWORK:-bridge}'
   # Whether to use privileged mode or not when launching task containers (privileged mode is required for Docker-in-Docker).
   privileged: ${GITEA_RUNNER_JOB_CONTAINER_PRIVILEGED:-false}
   # Any other options to be used when the container is started (e.g., --add-host=my.gitea.url:host-gateway).
   options: '${GITEA_RUNNER_JOB_CONTAINER_OPTIONS:-}'
   # The parent directory of a job's working directory.
-  # NOTE: There is no need to add the first '/' of the path as gitea-runner will add it automatically.
+  # NOTE: There is no need to add the first '/' of the path as runner will add it automatically.
   # If the path starts with '/', the '/' will be trimmed.
   # For example, if the parent directory is /path/to/my/dir, workdir_parent should be path/to/my/dir
   # If it's empty, /workspace will be used.
+  # Purely numeric subdirectories under this path are reserved for task workspaces and may be removed by idle cleanup.
   workdir_parent: ${GITEA_RUNNER_JOB_CONTAINER_WORKDIR_PARENT:-/workspace}
   # Volumes (including bind mounts) can be mounted to containers. Glob syntax is supported, see https://github.com/gobwas/glob
   # You can specify multiple volumes. If the sequence is empty, no volumes can be mounted.
@@ -124,17 +136,17 @@ container:
     - '${GITEA_RUNNER_VALID_VOLUME_8:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_8
     - '${GITEA_RUNNER_VALID_VOLUME_9:-/dev/null}' # GITEA_RUNNER_VALID_VOLUME_9
   # Overrides the docker client host with the specified one.
-  # If it's empty, gitea-runner will find an available docker host automatically.
-  # If it's "-", gitea-runner will find an available docker host automatically, but the docker host won't be mounted to the job containers and service containers.
+  # If it's empty, runner will find an available docker host automatically.
+  # If it's "-", runner will find an available docker host automatically, but the docker host won't be mounted to the job containers and service containers.
   # If it's not empty or "-", the specified docker host will be used. An error will be returned if it doesn't work.
   docker_host: '${GITEA_RUNNER_JOB_CONTAINER_DOCKER_HOST:-}'
   # Pull docker image(s) even if already present
   force_pull: ${GITEA_RUNNER_JOB_CONTAINER_FORCE_PULL:-true}
   # Rebuild docker image(s) even if already present
   force_rebuild: ${GITEA_RUNNER_JOB_CONTAINER_FORCE_REBUILD:-false}
-  # Always require a reachable docker daemon, even if not required by gitea-runner
+  # Always require a reachable docker daemon, even if not required by runner
   require_docker: ${GITEA_RUNNER_JOB_REQUIRE_DOCKER:-false}
-  # Timeout to wait for the docker daemon to be reachable, if docker is required by require_docker or gitea-runner
+  # Timeout to wait for the docker daemon to be reachable, if docker is required by require_docker or runner
   docker_timeout: ${GITEA_RUNNER_JOB_CONTAINER_TIMEOUT:-0s}
   # Bind the workspace to the host filesystem instead of using Docker volumes.
   # This is required for Docker-in-Docker (DinD) setups when jobs use docker compose
@@ -155,4 +167,4 @@ metrics:
   # The address for the metrics HTTP server to listen on.
   # Defaults to localhost only. Set to ":9101" to allow external access,
   # but ensure the port is firewall-protected as there is no authentication.
-  addr: ${GITEA_RUNNER_METRICS_ADDR:-127.0.0.1:9101}
+  addr: '${GITEA_RUNNER_METRICS_ADDR:-127.0.0.1:9101}'

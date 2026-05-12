@@ -286,6 +286,8 @@ GITEA_RUNNER_ENV_FILE|`/data/.env`|Extra environment variables to run jobs from 
 GITEA_RUNNER_FETCH_TIMEOUT|`5s`|The timeout for fetching the job from the Gitea instance
 GITEA_RUNNER_FETCH_INTERVAL|`2s`|The interval for fetching the job from the Gitea instance
 GITEA_RUNNER_FETCH_INTERVAL_MAX|`2s`|The maximum interval for fetching jobs when the runner backs off while idle. Set to `0` or the same value as `GITEA_RUNNER_FETCH_INTERVAL` to disable backoff
+GITEA_RUNNER_WORKDIR_CLEANUP_AGE|`24h`|While idle, remove stale bind-workdir task directories older than this duration. Set to `0` to disable workdir cleanup
+GITEA_RUNNER_IDLE_CLEANUP_INTERVAL|`10m`|How often the runner checks for stale bind-workdir task directories while idle. Set to `0` to disable workdir cleanup
 GITEA_RUNNER_LOG_REPORT_INTERVAL|`5s`|The base interval for sending buffered job logs to the Gitea instance
 GITEA_RUNNER_LOG_MAX_LATENCY|`3s`|The maximum time a buffered log line can wait before it is sent. Must be less than `GITEA_RUNNER_LOG_REPORT_INTERVAL` to have an effect
 GITEA_RUNNER_BATCH_SIZE|`100`|Flush job logs immediately when the buffer reaches this number of rows

@@ -224,7 +224,7 @@ jobs:
         egress-policy: audit
 
     - name: Delete untagged images
-      uses: dataaxiom/ghcr-cleanup-action@cd0cdb900b5dbf3a6f2cc869f0dbb0b8211f50c4 # v1.0.16
+      uses: dataaxiom/ghcr-cleanup-action@f092b48ba3b604b2a83690dc4b2bbb3392e1045f # v1.2.1
       with:
         package: ${{ env.DOCKER_REPO_NAME }}
         delete-untagged: true

@@ -203,6 +203,30 @@ jobs:
 
 
   ###########################################################
+  dependabot-pr-auto-merge:
+  ###########################################################
+    needs: [build]
+    # The PR author remains stable when a maintainer reruns a Dependabot workflow.
+    if: >-
+      ${{
+        github.event_name == 'pull_request' &&
+        github.event.pull_request.user.login == 'dependabot[bot]'
+      }}
+
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: write
+
+    uses: sebthom/gha-shared/.github/workflows/reusable.dependabot-auto-merge.yml@v1
+    with:
+      dependabot-package-ecosystems: '["github-actions"]'
+      dependabot-merge-method: squash
+      # This repository has no protected branch rules and GitHub auto-merge is disabled.
+      dependabot-use-auto-merge: false
+
+
+  ###########################################################
   delete-untagged-images:
   ###########################################################
     runs-on: ubuntu-latest  # https://github.com/actions/runner-images#available-images

@@ -32,8 +32,9 @@ ARG UPX_COMPRESS=false
 ARG FLAVOR
 ARG GITEA_RUNNER_VERSION
 
+# NOTE: SC3010 is temporary workaround for https://github.com/hadolint/hadolint/issues/1241
 # https://github.com/hadolint/hadolint/wiki/DL3008 Pin versions
-# hadolint ignore=DL3008
+# hadolint ignore=DL3008,SC3010
 RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=.shared,target=/mnt/shared <<EOF
   /mnt/shared/cmd/debian-install-os-updates.sh
   /mnt/shared/cmd/debian-install-support-tools.sh
@@ -282,6 +283,8 @@ COPY image/*.sh /opt/
 COPY image/config.template.yaml /opt/
 COPY .shared/lib/bash-init.sh /opt/bash-init.sh
 
+# https://github.com/hadolint/hadolint/wiki/DL3066 Non-numeric user-id may not be resolvable by host system
+# hadolint ignore=DL3066
 USER act
 
 VOLUME /data

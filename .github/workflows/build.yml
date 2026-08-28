@@ -54,7 +54,7 @@ env:
   TRIVY_CACHE_DIR: ~/.trivy/cache
 
 
-permissions:  # added using https://github.com/step-security/secure-repo
+permissions:
   contents: read
 
 jobs:
@@ -200,6 +200,28 @@ jobs:
 
     outputs:
       DOCKER_PUSH_GHCR: ${{ steps.docker_push_actions.outputs.DOCKER_PUSH_GHCR }}
+
+
+  ###########################################################
+  dependabot-pr-auto-merge:
+  ###########################################################
+    needs: build
+    # Check both the actor and PR author so this write-capable job only runs for Dependabot updates.
+    if: >-
+      needs.build.result == 'success' && 
+      github.actor == 'dependabot[bot]' &&
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    uses: sebthom/gha-shared/.github/workflows/reusable.dependabot-auto-merge.yml@v1
+    with:
+      package-ecosystems: '["github-actions"]'
+      merge-method: squash
+      merge-major-updates: false
 
 
   ###########################################################

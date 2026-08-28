@@ -4,9 +4,9 @@ updates:
 - package-ecosystem: github-actions
   directory: /
   schedule:
-    interval: weekly
-    day: monday
+    interval: daily  # Part of the mitigation for https://github.com/sebthom/gha-shared#blocking-issue-concurrent-workflow-file-updates
     time: "14:00"
+  open-pull-requests-limit: 1  # Part of the mitigation for https://github.com/sebthom/gha-shared#blocking-issue-concurrent-workflow-file-updates
   commit-message:
     prefix: ci
     prefix-development: ci

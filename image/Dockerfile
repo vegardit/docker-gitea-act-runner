@@ -64,7 +64,8 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
   echo "#################################################"
   echo "Installing required packages..."
   echo "#################################################"
-  apt-get install --no-install-recommends -y adduser binutils ca-certificates curl sudo tini
+  # Gitea Runner 5 or higher uses git cli to download actions
+  apt-get install --no-install-recommends -y adduser binutils ca-certificates curl git sudo tini
 
   if [[ $UPX_COMPRESS == "true" ]]; then
     echo "#################################################"
@@ -123,8 +124,6 @@ RUN --mount=type=secret,id=github_token,required=false --mount=type=bind,source=
     echo "#################################################"
     echo "Installing docker engine..."
     echo "#################################################"
-    # git needed by buildx
-    apt-get install --no-install-recommends -y git
     # https://docs.docker.com/engine/install/debian/#install-using-the-repository
     apt-get install --no-install-recommends -y gnupg
     install -m 0755 -d /etc/apt/keyrings

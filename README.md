@@ -25,9 +25,11 @@ Multi-arch Docker image based on `debian:stable-slim` containing [Gitea](https:/
 ## <a name="usage"></a>Usage
 
 The docker image comes in three flavors:
-- `vegardit/gitea-act-runner:latest`: contains only Gitea Runner and executes workflows in sibling containers on the Docker engine that runs the runner container itself (DooD / Docker-out-of-Docker approach)
+- `vegardit/gitea-act-runner:latest`: contains Gitea Runner and its runtime dependencies and executes workflows in sibling containers on the Docker engine that runs the runner container itself (DooD / Docker-out-of-Docker approach)
 - `vegardit/gitea-act-runner:dind-latest`: executes workflows using an embedded docker engine (DinD / Docker-in-Docker approach) providing better process isolation
 - `vegardit/gitea-act-runner:dind-rootless-latest`: executes workflows using an embedded docker engine (DinD / Docker-in-Docker approach) running the docker daemon as a non-root user [(Rootless mode)](https://docs.docker.com/engine/security/rootless/)
+
+All flavors include Git 2.34.1 or newer, which Gitea Runner 5+ requires to download actions and reusable workflows.
 
 ### Docker Run
 
